@@ -10,11 +10,10 @@ def readData(itemSize, userSize):   ##size indicates how many records to be invo
     f = open(PATH + FILE_ITEM)
     item_obj    = csv.reader(f)
     train_item  = []
-    header_item = {}
+    header_item = []
     for i,line in enumerate(item_obj):
         if i == 0:
-            for ind,item in enumerate(line):
-                header_item[item] = ind
+            header_item.append[line]
         elif (i > 0 and i <= itemSize):
             train_item.append(line)
         else:
@@ -24,11 +23,10 @@ def readData(itemSize, userSize):   ##size indicates how many records to be invo
     f = open(PATH + FILE_USER)
     user_obj    = csv.reader(f)
     train_user  = []
-    header_user = {}
+    header_user = []
     for i,line in enumerate(user_obj):
         if i == 0:
-            for ind,user in enumerate(line):
-                header_user[user] = ind
+            header_user.append(line)
         elif (i > 0 and i <= userSize):
             train_user.append(line)
         else:
@@ -46,11 +44,10 @@ def readSampleData():
     f = open(PATH + FILE_ITEM)
     item_obj    = csv.reader(f)
     train_item  = []
-    header_item = {}
+    header_item = []
     for i,line in enumerate(item_obj):
         if i == 0:
-            for ind,item in enumerate(line):
-                header_item[item] = ind
+            header_item.append(line)
         else:
             train_item.append(line)
     f.close
@@ -58,11 +55,10 @@ def readSampleData():
     f = open(PATH + FILE_USER)
     user_obj    = csv.reader(f)
     train_user  = []
-    header_user = {}
+    header_user = []
     for i,line in enumerate(user_obj):
         if i == 0:
-            for ind,user in enumerate(line):
-                header_user[user] = ind
+            header_user.append(line)
         else:
             train_user.append(line)
     f.close
