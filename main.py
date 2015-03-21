@@ -1,22 +1,36 @@
 #coding=utf-8
 
-import time
-from utils import dump_pickle, load_pickle
+from utils import *
 from data_process import *
-from data_import import readData,readSampleData
+from data_import import *
 
-START_TIME      = time.time()
 
 if __name__ == '__main__':
     
-    LOAD_FROM_PICKLE = False
+    USE_SAMPLE_DATA  = True
+    LOAD_FROM_PICKLE = True
     
-    train_item, header_item, train_user, header_user = readSampleData()
-#   train_item, header_item, train_user, header_user = readData(itemSize = 1000000, userSize = 10000000)
+    if USE_SAMPLE_DATA: train_item, header_item, train_user, header_user = readSampleData()
+    else:               train_item, header_item, train_user, header_user = readData(itemSize = 9999999, userSize = 99999999)
+    
     train_user, header_user = columnProcess(train_user)
-    train_user = listToDataFrame(train_user, header_user)   
-    userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures, itemCategoryFeatures = feature_exaction(train_user, LOAD_FROM_PICKLE)
+    train_user = listToDataFrame(train_user, header_user)
+    
+    userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures = feature_exaction(train_user, LOAD_FROM_PICKLE)
+
+
+
+
+
+
+
+
+
+
+
 
 
     print train_user[0:2]
-    print userFeatures.iloc[0:2,:]
+    print userFeatures.ix[0:2,:]
+    print itemFeatures.ix[0:2,:]
+    print userItemFeatures.ix[0:2,:]

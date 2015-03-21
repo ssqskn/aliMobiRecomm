@@ -18,5 +18,5 @@ def load_pickle():
     categoryFeatures    = _load_pickle("pickle\\categoryFeatures.pickle")
     userItemFeatures     = _load_pickle("pickle\\userItemFeatures.pickle")    
     userCategoryFeatures = _load_pickle("pickle\\userCategoryFeatures.pickle")
-    itemCategoryFeatures = _load_pickle("pickle\\itemCategoryFeatures.pickle")   
-    return userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures, itemCategoryFeatures
+    return userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures
+
