@@ -20,7 +20,7 @@ def columnProcess(data):
         timeSplit2 = timeSplit[2].split(' ')
         data[i].append(int(timeSplit[0]));      data[i].append(int(timeSplit[1]))
         data[i].append(int(timeSplit2[0]));     data[i].append(int(timeSplit2[1]))    
-        data[i].append((int(timeSplit[0])-2014)*365 + monthDaysDict[timeSplit[1]] + int(timeSplit2[0]))    
+        data[i].append((int(timeSplit[0])-2014)*365 + monthDaysDict[timeSplit[1]] + int(timeSplit2[0]) - 304 - 17) ##count from 20141118    
         ##add user_item pair and user_category pair
         data[i].append((data[i][0],data[i][1]))
         data[i].append((data[i][0],data[i][4]))
@@ -388,9 +388,6 @@ def featureCombination(train_user, userFeatures, itemFeatures, categoryFeatures,
     header = header.append(userItemFeatures.columns[1::] + '_u&i'); train_user.columns = header   
     train_user = train_user.merge(userCategoryFeatures, left_on = 'user_category_pairs', right_on = 'user_category_pairs', how = 'left')
     header = header.append(userCategoryFeatures.columns[1::] + '_u&c'); train_user.columns = header      
-    
-#    train_user.to_csv("data_tmp//feaExacted.csv")
-#    dump_pickle(train_user, "pickle//feaCombined.pickle")
     
     return train_user
 
