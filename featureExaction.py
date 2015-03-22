@@ -1,6 +1,5 @@
 #coding=utf-8
 import pandas as pd
-import numpy as np
 import time
 from utils import dump_pickle, load_pickle
 from pandas import DataFrame,pivot_table
@@ -26,6 +25,7 @@ def columnProcess(data):
         data[i].append((data[i][0],data[i][1]))
         data[i].append((data[i][0],data[i][4]))
         data[i].append((data[i][1],data[i][4]))
+        
     header = ['user_id','item_id','behavior_type','user_geohash','item_category',
               'time','YYYY','MM','DD','HH','Days','user_item_pairs','user_category_pairs','item_category_pairs']
         
@@ -112,7 +112,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         userFeatures = userFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
                                           left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('records_morning'); userFeatures.columns = userFeaCol   
 
-        print "Time for user features exaction: %.3f" % (time.time() - START_TIME)
+        print "Time for user feature exaction: %.3f" % (time.time() - START_TIME)
 
         ## features of item
         itemFeaCol = ['item_id']
@@ -120,7 +120,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         itemFeatures = itemFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='item_id', aggfunc = lambda x:len(x.unique()))),
                                           left_on = 'item_id', right_index = True); itemFeaCol.append('userCount'); itemFeatures.columns = itemFeaCol
         itemFeatures = itemFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True); itemFeaCol.append('itemRecord'); itemFeatures.columns = itemFeaCol
+                                          left_on = 'item_id', right_index = True); itemFeaCol.append('Records'); itemFeatures.columns = itemFeaCol
         itemFeatures = itemFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='item_id', aggfunc = lambda x:max(x) - min(x) + 1)),
                                           left_on = 'item_id', right_index = True); itemFeaCol.append('Period'); itemFeatures.columns = itemFeaCol
         itemFeatures = itemFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='item_id', aggfunc = lambda x:len(x.unique()))),
@@ -142,7 +142,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         itemFeatures = itemFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
                                           left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('records_morning'); itemFeatures.columns = itemFeaCol   
                             
-        print "Time for item features exaction: %.3f" % (time.time() - START_TIME)                                    
+        print "Time for item feature exaction: %.3f" % (time.time() - START_TIME)                                    
 
         ## features of category
         categoryFeaCol = ['item_category']
@@ -150,7 +150,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         categoryFeatures = categoryFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='item_category', aggfunc = lambda x:len(x.unique()))),
                                           left_on = 'item_category', right_index = True); categoryFeaCol.append('userCount'); categoryFeatures.columns = categoryFeaCol
         categoryFeatures = categoryFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True); categoryFeaCol.append('categoryRecord'); categoryFeatures.columns = categoryFeaCol
+                                          left_on = 'item_category', right_index = True); categoryFeaCol.append('Records'); categoryFeatures.columns = categoryFeaCol
         categoryFeatures = categoryFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='item_category', aggfunc = lambda x:max(x) - min(x) + 1)),
                                           left_on = 'item_category', right_index = True); categoryFeaCol.append('Period'); categoryFeatures.columns = categoryFeaCol
         categoryFeatures = categoryFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='item_category', aggfunc = lambda x:len(x.unique()))),
@@ -172,7 +172,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         categoryFeatures = categoryFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
                                           left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('records_morning'); categoryFeatures.columns = categoryFeaCol   
  
-        print "Time for category features exaction: %.3f" % (time.time() - START_TIME)                                    
+        print "Time for category feature exaction: %.3f" % (time.time() - START_TIME)                                    
 
         ## features of userItem
         userItemFeaCol = ['user_item_pairs']
@@ -180,7 +180,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         userItemFeatures = userItemFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = lambda x:len(x.unique()))),
                                           left_on = 'user_item_pairs', right_index = True); userItemFeaCol.append('userCount'); userItemFeatures.columns = userItemFeaCol
         userItemFeatures = userItemFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True); userItemFeaCol.append('userItemRecord'); userItemFeatures.columns = userItemFeaCol
+                                          left_on = 'user_item_pairs', right_index = True); userItemFeaCol.append('Records'); userItemFeatures.columns = userItemFeaCol
         userItemFeatures = userItemFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_item_pairs', aggfunc = lambda x:max(x) - min(x) + 1)),
                                           left_on = 'user_item_pairs', right_index = True); userItemFeaCol.append('Period'); userItemFeatures.columns = userItemFeaCol
         userItemFeatures = userItemFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_item_pairs', aggfunc = lambda x:len(x.unique()))),
@@ -202,7 +202,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         userItemFeatures = userItemFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
                                           left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('records_morning'); userItemFeatures.columns = userItemFeaCol   
 
-        print "Time for user-item exaction: %.3f" % (time.time() - START_TIME)                                    
+        print "Time for user-item feature exaction: %.3f" % (time.time() - START_TIME)                                    
 
         ## features of userItem
         userCategoryFeaCol = ['user_category_pairs']
@@ -210,7 +210,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = lambda x:len(x.unique()))),
                                           left_on = 'user_category_pairs', right_index = True); userCategoryFeaCol.append('userCount'); userCategoryFeatures.columns = userCategoryFeaCol
         userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True); userCategoryFeaCol.append('userCategoryRecord'); userCategoryFeatures.columns = userCategoryFeaCol
+                                          left_on = 'user_category_pairs', right_index = True); userCategoryFeaCol.append('Records'); userCategoryFeatures.columns = userCategoryFeaCol
         userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_category_pairs', aggfunc = lambda x:max(x) - min(x) + 1)),
                                           left_on = 'user_category_pairs', right_index = True); userCategoryFeaCol.append('Period'); userCategoryFeatures.columns = userCategoryFeaCol
         userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_category_pairs', aggfunc = lambda x:len(x.unique()))),
@@ -232,7 +232,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
                                           left_on = 'user_category_pairs', right_index = True, how = 'left'); userCategoryFeaCol.append('records_morning'); userCategoryFeatures.columns = userCategoryFeaCol   
 
-        print "Time for user-category exaction: %.3f" % (time.time() - START_TIME)                                                                   
+        print "Time for user-category feature exaction: %.3f" % (time.time() - START_TIME)                                                                   
         
         ## fill na by 0
         userFeatures = userFeatures.fillna(0)
@@ -240,7 +240,16 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         categoryFeatures = categoryFeatures.fillna(0)
         userItemFeatures = userItemFeatures.fillna(0)
         userCategoryFeatures = userCategoryFeatures.fillna(0)
-           
+        ## calculate features
+        userFeatures         = user_feature_cal(userFeatures)     
+        itemFeatures         = item_feature_cal(itemFeatures)
+        categoryFeatures     = category_feature_cal(categoryFeatures)
+        userItemFeatures     = userItemFeatureCal(userItemFeatures)
+        userCategoryFeatures = userCategoryFeatureCal(userCategoryFeatures)
+        
+        print "Time for calculating features: %.3f" % (time.time() - START_TIME)                                    
+
+        ## dump pickle
         dump_pickle(userFeatures, "pickle\\userFeatures.pickle")
         dump_pickle(itemFeatures, "pickle\\itemFeatures.pickle")    
         dump_pickle(categoryFeatures, "pickle\\categoryFeatures.pickle")
@@ -250,24 +259,157 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         print "Time for pickle dump: %.3f" % (time.time() - START_TIME)                                    
  
     return userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures
-    
 
+def user_feature_cal(userFeatures):
+    
+    userFeatures['LogDayFreq'] = userFeatures['Online_Days'] * 1.0 / userFeatures['Period'] 
+    userFeatures['ViewPerDay'] = userFeatures['records'] * 1.0 / userFeatures['Online_Days'] 
+    userFeatures['MorningProp'] = userFeatures['records_morning'] * 1.0 / userFeatures['records']        
+    userFeatures['AfternoonProp'] = userFeatures['records_afternoon'] * 1.0 / userFeatures['records']   
+    userFeatures['EveningProp'] = userFeatures['records_evening'] * 1.0 / userFeatures['records']        
+    userFeatures['MidnightProp'] = userFeatures['records_midnight'] * 1.0 / userFeatures['records']          
+    userFeatures['ViewProp'] = userFeatures['Behavior_1'] * 1.0 / userFeatures['records']            
+    userFeatures['FavorProp'] = userFeatures['Behavior_2'] * 1.0 / userFeatures['records']            
+    userFeatures['CartProp'] = userFeatures['Behavior_3'] * 1.0 / userFeatures['records']            
+    userFeatures['PayProp'] = userFeatures['Behavior_4'] * 1.0 / userFeatures['records']       
+    userFeatures['PayViewRate'] = userFeatures['Behavior_4'] * 1.0 / userFeatures['Behavior_1']        
+    userFeatures['PayFavorRate'] = userFeatures['Behavior_4'] * 1.0 / userFeatures['Behavior_2']    
+    userFeatures['PayCartRate'] = userFeatures['Behavior_4'] * 1.0 / userFeatures['Behavior_3']        
+    userFeatures['FavorViewRate'] = userFeatures['Behavior_2'] * 1.0 / userFeatures['Behavior_1']       
+    userFeatures['CartViewRate'] = userFeatures['Behavior_3'] * 1.0 / userFeatures['Behavior_1']      
+    userFeatures['CartFavorRate'] = userFeatures['Behavior_3'] * 1.0 / userFeatures['Behavior_2']     
+ 
+    userFeatures = userFeatures.fillna(0)
+    userFeatures = userFeatures.replace('inf',-999)
+    
+    return userFeatures
+
+def item_feature_cal(itemFeatures):
+    
+    itemFeatures['ViewPerClickDay'] = itemFeatures['Records'] * 1.0 / itemFeatures['ClickDays'] 
+    itemFeatures['PayPerUser'] = itemFeatures['Behavior_4'] * 1.0 / itemFeatures['userCount'] 
+    itemFeatures['ViewPerUser'] = itemFeatures['Behavior_1'] * 1.0 / itemFeatures['userCount'] 
+    itemFeatures['CartPerUser'] = itemFeatures['Behavior_3'] * 1.0 / itemFeatures['userCount'] 
+    itemFeatures['FavorPerUser'] = itemFeatures['Behavior_2'] * 1.0 / itemFeatures['userCount'] 
+    itemFeatures['MorningProp'] = itemFeatures['records_morning'] * 1.0 / itemFeatures['Records']        
+    itemFeatures['AfternoonProp'] = itemFeatures['records_afternoon'] * 1.0 / itemFeatures['Records']   
+    itemFeatures['EveningProp'] = itemFeatures['records_evening'] * 1.0 / itemFeatures['Records']        
+    itemFeatures['MidnightProp'] = itemFeatures['records_midnight'] * 1.0 / itemFeatures['Records']         
+    itemFeatures['ViewProp'] = itemFeatures['Behavior_1'] * 1.0 / itemFeatures['Records']            
+    itemFeatures['FavorProp'] = itemFeatures['Behavior_2'] * 1.0 / itemFeatures['Records']            
+    itemFeatures['CartProp'] = itemFeatures['Behavior_3'] * 1.0 / itemFeatures['Records']            
+    itemFeatures['PayProp'] = itemFeatures['Behavior_4'] * 1.0 / itemFeatures['Records']       
+    itemFeatures['PayViewRate'] = itemFeatures['Behavior_4'] * 1.0 / itemFeatures['Behavior_1']        
+    itemFeatures['PayFavorRate'] = itemFeatures['Behavior_4'] * 1.0 / itemFeatures['Behavior_2']      
+    itemFeatures['PayCartRate'] = itemFeatures['Behavior_4'] * 1.0 / itemFeatures['Behavior_3']        
+    itemFeatures['FavorViewRate'] = itemFeatures['Behavior_2'] * 1.0 / itemFeatures['Behavior_1']       
+    itemFeatures['CartViewRate'] = itemFeatures['Behavior_3'] * 1.0 / itemFeatures['Behavior_1']      
+    itemFeatures['CartFavorRate'] = itemFeatures['Behavior_3'] * 1.0 / itemFeatures['Behavior_2']     
+ 
+    itemFeatures = itemFeatures.fillna(0)
+    itemFeatures = itemFeatures.replace('inf',-999)  
+    
+    return itemFeatures
+
+def category_feature_cal(categoryFeatures):
+    
+    categoryFeatures['ViewPerClickDay'] = categoryFeatures['Records'] * 1.0 / categoryFeatures['ClickDays'] 
+    categoryFeatures['ClickPerUser'] = categoryFeatures['Records'] * 1.0 / categoryFeatures['userCount'] 
+    categoryFeatures['PayPerUser'] = categoryFeatures['Behavior_4'] * 1.0 / categoryFeatures['userCount'] 
+    categoryFeatures['ViewPerUser'] = categoryFeatures['Behavior_1'] * 1.0 / categoryFeatures['userCount'] 
+    categoryFeatures['CartPerUser'] = categoryFeatures['Behavior_3'] * 1.0 / categoryFeatures['userCount'] 
+    categoryFeatures['FavorPerUser'] = categoryFeatures['Behavior_2'] * 1.0 / categoryFeatures['userCount'] 
+    categoryFeatures['MorningProp'] = categoryFeatures['records_morning'] * 1.0 / categoryFeatures['Records']        
+    categoryFeatures['AfternoonProp'] = categoryFeatures['records_afternoon'] * 1.0 / categoryFeatures['Records']   
+    categoryFeatures['EveningProp'] = categoryFeatures['records_evening'] * 1.0 / categoryFeatures['Records']        
+    categoryFeatures['MidnightProp'] = categoryFeatures['records_midnight'] * 1.0 / categoryFeatures['Records']         
+    categoryFeatures['ViewProp'] = categoryFeatures['Behavior_1'] * 1.0 / categoryFeatures['Records']            
+    categoryFeatures['FavorProp'] = categoryFeatures['Behavior_2'] * 1.0 / categoryFeatures['Records']            
+    categoryFeatures['CartProp'] = categoryFeatures['Behavior_3'] * 1.0 / categoryFeatures['Records']            
+    categoryFeatures['PayProp'] = categoryFeatures['Behavior_4'] * 1.0 / categoryFeatures['Records']       
+    categoryFeatures['PayViewRate'] = categoryFeatures['Behavior_4'] * 1.0 / categoryFeatures['Behavior_1']        
+    categoryFeatures['PayFavorRate'] = categoryFeatures['Behavior_4'] * 1.0 / categoryFeatures['Behavior_2']      
+    categoryFeatures['PayCartRate'] = categoryFeatures['Behavior_4'] * 1.0 / categoryFeatures['Behavior_3']        
+    categoryFeatures['FavorViewRate'] = categoryFeatures['Behavior_2'] * 1.0 / categoryFeatures['Behavior_1']       
+    categoryFeatures['CartViewRate'] = categoryFeatures['Behavior_3'] * 1.0 / categoryFeatures['Behavior_1']      
+    categoryFeatures['CartFavorRate'] = categoryFeatures['Behavior_3'] * 1.0 / categoryFeatures['Behavior_2']     
+ 
+    categoryFeatures = categoryFeatures.fillna(0)
+    categoryFeatures = categoryFeatures.replace('inf',-999)  
+
+    return categoryFeatures
+
+def userItemFeatureCal(userItemFeatures):
+    
+    userItemFeatures['ViewPerOnlineDay'] = userItemFeatures['Records'] * 1.0 / userItemFeatures['ClickDays'] 
+    userItemFeatures['MorningProp'] = userItemFeatures['records_morning'] * 1.0 / userItemFeatures['Records']        
+    userItemFeatures['AfternoonProp'] = userItemFeatures['records_afternoon'] * 1.0 / userItemFeatures['Records']   
+    userItemFeatures['EveningProp'] = userItemFeatures['records_evening'] * 1.0 / userItemFeatures['Records']        
+    userItemFeatures['MidnightProp'] = userItemFeatures['records_midnight'] * 1.0 / userItemFeatures['Records']          
+    userItemFeatures['ViewProp'] = userItemFeatures['Behavior_1'] * 1.0 / userItemFeatures['Records']            
+    userItemFeatures['FavorProp'] = userItemFeatures['Behavior_2'] * 1.0 / userItemFeatures['Records']            
+    userItemFeatures['CartProp'] = userItemFeatures['Behavior_3'] * 1.0 / userItemFeatures['Records']            
+    userItemFeatures['PayProp'] = userItemFeatures['Behavior_4'] * 1.0 / userItemFeatures['Records']       
+    
+    userItemFeatures = userItemFeatures.fillna(0)
+    userItemFeatures = userItemFeatures.replace('inf', -999)
+
+    return userItemFeatures
+
+def userCategoryFeatureCal(userCategoryFeatures):
+    
+    userCategoryFeatures['ViewPerOnlineDay'] = userCategoryFeatures['Records'] * 1.0 / userCategoryFeatures['ClickDays'] 
+    userCategoryFeatures['MorningProp'] = userCategoryFeatures['records_morning'] * 1.0 / userCategoryFeatures['Records']        
+    userCategoryFeatures['AfternoonProp'] = userCategoryFeatures['records_afternoon'] * 1.0 / userCategoryFeatures['Records']   
+    userCategoryFeatures['EveningProp'] = userCategoryFeatures['records_evening'] * 1.0 / userCategoryFeatures['Records']        
+    userCategoryFeatures['MidnightProp'] = userCategoryFeatures['records_midnight'] * 1.0 / userCategoryFeatures['Records']          
+    userCategoryFeatures['ViewProp'] = userCategoryFeatures['Behavior_1'] * 1.0 / userCategoryFeatures['Records']            
+    userCategoryFeatures['FavorProp'] = userCategoryFeatures['Behavior_2'] * 1.0 / userCategoryFeatures['Records']            
+    userCategoryFeatures['CartProp'] = userCategoryFeatures['Behavior_3'] * 1.0 / userCategoryFeatures['Records']            
+    userCategoryFeatures['PayProp'] = userCategoryFeatures['Behavior_4'] * 1.0 / userCategoryFeatures['Records']       
+    
+    userCategoryFeatures = userCategoryFeatures.fillna(0)
+    userCategoryFeatures = userCategoryFeatures.replace('inf', -999)
+
+    return userCategoryFeatures
+
+## combine exacted features with train data
+def featureCombination(train_user, userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures):
+  
+    header = train_user.columns
+
+    train_user = train_user.merge(userFeatures, left_on = 'user_id', right_on = 'user_id', how = 'left')
+    header = header.append(userFeatures.columns[1::] + '_u'); train_user.columns = header
+    train_user = train_user.merge(itemFeatures, left_on = 'item_id', right_on = 'item_id', how = 'left')
+    header = header.append(itemFeatures.columns[1::] + '_i'); train_user.columns = header
+    train_user = train_user.merge(categoryFeatures, left_on = 'item_category', right_on = 'item_category', how = 'left')
+    header = header.append(categoryFeatures.columns[1::] + '_c'); train_user.columns = header   
+    train_user = train_user.merge(userItemFeatures, left_on = 'user_item_pairs', right_on = 'user_item_pairs', how = 'left')
+    header = header.append(userItemFeatures.columns[1::] + '_u&i'); train_user.columns = header   
+    train_user = train_user.merge(userCategoryFeatures, left_on = 'user_category_pairs', right_on = 'user_category_pairs', how = 'left')
+    header = header.append(userCategoryFeatures.columns[1::] + '_u&c'); train_user.columns = header      
+    
+#    train_user.to_csv("data_tmp//feaExacted.csv")
+#    dump_pickle(train_user, "pickle//feaCombined.pickle")
+    
+    return train_user
 
 
 if __name__ == '__main__':
 
     LOAD_FROM_PICKLE = True
-    
+#   train_item, header_item, train_user, header_user = readData(itemSize = 1000000, userSize = 10000000)   
     train_item, header_item, train_user, header_user = readSampleData()
-#   train_item, header_item, train_user, header_user = readData(itemSize = 1000000, userSize = 10000000)
     train_user, header_user = columnProcess(train_user)
     train_user = listToDataFrame(train_user, header_user)
     
     userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures =feature_exaction(train_user, LOAD_FROM_PICKLE)
 
-    print train_user[0:2]
-    print userFeatures.ix[0:2,:]
-    print itemFeatures.ix[0:2,:]
-    print categoryFeatures.ix[0:2,:]
-    print userItemFeatures.ix[0:2,:]
-    print userCategoryFeatures.ix[0:2,:]
+
+    
+    
+    
+    
+    
+    
+    
