@@ -4,6 +4,7 @@ import numpy as np
 from utils import *
 from data_import import *
 from featureExtraction import *
+from preprocess import*
 from randomForest import fitRForest
 from voting import majorityVoting
 from sklearn import cross_validation
@@ -21,13 +22,16 @@ if __name__ == '__main__':
      
     ## data import
     if USE_SAMPLE_DATA: train_item, header_item, train_user, header_user = readSampleData()
-    else:               train_item, header_item, train_user, header_user = readData(itemSize = 9999999, userSize = 99999999)
+    else:               train_item, header_item, train_user, header_user = readData(itemSize = 20000, userSize = 100000)
     
     train_user, header_user = columnProcess(train_user)
     train_user = listToDataFrame(train_user, header_user)
+    train_user = data_sort(train_user)   # sort by user-category pairs, time, user_item pair
+    
+    train_user = data_preprocess_1(train_user)
     ## feature exaction
-    userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures = feature_exaction(train_user, LOAD_FROM_PICKLE)
-    train_user = featureCombination(train_user, userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures)
+#    userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures = feature_exaction(train_user, LOAD_FROM_PICKLE)
+#    train_user = featureCombination(train_user, userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures)
 
 #   train_user.to_csv("data_tmp//feaExacted.csv")
 #   dump_pickle(train_user, "pickle//feaCombined.pickle")

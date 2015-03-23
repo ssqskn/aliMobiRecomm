@@ -1,5 +1,6 @@
 #coding=utf-8
 import pickle
+from pandas.core.frame import DataFrame
 
 ##dump pickle
 def dump_pickle(dct,PATH):
@@ -20,3 +21,6 @@ def load_pickle():
     userCategoryFeatures = _load_pickle("pickle\\userCategoryFeatures.pickle")
     return userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures
 
+def data_sort(train_user):
+    train_user = train_user.sort(columns = ['user_category_pairs','D&H','user_item_pairs'])
+    return train_user    

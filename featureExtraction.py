@@ -19,15 +19,16 @@ def columnProcess(data):
         timeSplit = data[i][5].split('-')
         timeSplit2 = timeSplit[2].split(' ')
         data[i].append(int(timeSplit[0]));      data[i].append(int(timeSplit[1]))
-        data[i].append(int(timeSplit2[0]));     data[i].append(int(timeSplit2[1]))    
-        data[i].append((int(timeSplit[0])-2014)*365 + monthDaysDict[timeSplit[1]] + int(timeSplit2[0]) - 304 - 17) ##count from 20141118    
+        data[i].append(int(timeSplit2[0]));     data[i].append(int(timeSplit2[1]))
+        DAYS = (int(timeSplit[0])-2014)*365 + monthDaysDict[timeSplit[1]] + int(timeSplit2[0]) - 304 - 17 ##count from 20141118      
+        data[i].append(DAYS);                   data[i].append(DAYS + int(timeSplit2[1]) * 1.0/24)
         ##add user_item pair and user_category pair
         data[i].append((data[i][0],data[i][1]))
         data[i].append((data[i][0],data[i][4]))
         data[i].append((data[i][1],data[i][4]))
         
     header = ['user_id','item_id','behavior_type','user_geohash','item_category',
-              'time','YYYY','MM','DD','HH','Days','user_item_pairs','user_category_pairs','item_category_pairs']
+              'time','YYYY','MM','DD','HH','Days','D&H','user_item_pairs','user_category_pairs','item_category_pairs']
         
     return data, header
 ##exact features from train data
