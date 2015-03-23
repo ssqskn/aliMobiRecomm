@@ -13,7 +13,7 @@ from sklearn import cross_validation
 if __name__ == '__main__':
     
     USE_SAMPLE_DATA  = False
-    LOAD_FROM_PICKLE = False
+    LOAD_FROM_PICKLE = True
     SUBMIT           = False
     
     params = [(30,5,20)]    #ntree, maxfea, leafsize of random forest
@@ -22,7 +22,7 @@ if __name__ == '__main__':
      
     ## data import
     if USE_SAMPLE_DATA: train_item, header_item, train_user, header_user = readSampleData()
-    else:               train_item, header_item, train_user, header_user = readData(itemSize = 100, userSize = 1000000)
+    else:               train_item, header_item, train_user, header_user = readData(itemSize = 100, userSize = 500000)
     
     train_user, header_user = columnProcess(train_user)
     train_user = listToDataFrame(train_user, header_user)
