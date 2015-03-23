@@ -15,11 +15,11 @@ def _load_pickle(PATH):
 
 def load_pickle():
     userFeatures         = _load_pickle("pickle\\userFeatures.pickle")
-    itemFeatures         = _load_pickle("pickle\\itemFeatures.pickle")
+#    itemFeatures         = _load_pickle("pickle\\itemFeatures.pickle")
     categoryFeatures    = _load_pickle("pickle\\categoryFeatures.pickle")
-    userItemFeatures     = _load_pickle("pickle\\userItemFeatures.pickle")    
+#    userItemFeatures     = _load_pickle("pickle\\userItemFeatures.pickle")    
     userCategoryFeatures = _load_pickle("pickle\\userCategoryFeatures.pickle")
-    return userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures
+    return userFeatures, categoryFeatures, userCategoryFeatures
 
 def data_sort(train_user):
     train_user = train_user.sort(columns = ['user_category_pairs','D&H','user_item_pairs'])

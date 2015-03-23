@@ -83,7 +83,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
        
     '''   
     if LOAD_FROM_PICKLE:
-        userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures = load_pickle()
+        userFeatures, categoryFeatures, userCategoryFeatures = load_pickle()
     else:
         ## features of user
         userFeaCol   = ['user_id']
@@ -114,7 +114,8 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
                                           left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('records_morning'); userFeatures.columns = userFeaCol   
 
         print "Time for user feature exaction: %.3f" % (time.time() - START_TIME)
-
+        
+        '''
         ## features of item
         itemFeaCol = ['item_id']
         itemFeatures = DataFrame(data['item_id'].unique(), columns = itemFeaCol)
@@ -144,7 +145,7 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
                                           left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('records_morning'); itemFeatures.columns = itemFeaCol   
                             
         print "Time for item feature exaction: %.3f" % (time.time() - START_TIME)                                    
-
+        '''
         ## features of category
         categoryFeaCol = ['item_category']
         categoryFeatures = DataFrame(data['item_category'].unique(), columns = categoryFeaCol)
@@ -174,7 +175,8 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
                                           left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('records_morning'); categoryFeatures.columns = categoryFeaCol   
  
         print "Time for category feature exaction: %.3f" % (time.time() - START_TIME)                                    
-
+        
+        '''
         ## features of userItem
         userItemFeaCol = ['user_item_pairs']
         userItemFeatures = DataFrame(data['user_item_pairs'].unique(), columns = userItemFeaCol)
@@ -204,8 +206,8 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
                                           left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('records_morning'); userItemFeatures.columns = userItemFeaCol   
 
         print "Time for user-item feature exaction: %.3f" % (time.time() - START_TIME)                                    
-
-        ## features of userItem
+        '''
+        ## features of user-Category
         userCategoryFeaCol = ['user_category_pairs']
         userCategoryFeatures = DataFrame(data['user_category_pairs'].unique(), columns = userCategoryFeaCol)
         userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = lambda x:len(x.unique()))),
@@ -237,29 +239,29 @@ def feature_exaction(data, LOAD_FROM_PICKLE):
         
         ## fill na by 0
         userFeatures = userFeatures.fillna(0)
-        itemFeatures = itemFeatures.fillna(0)
+#       itemFeatures = itemFeatures.fillna(0)
         categoryFeatures = categoryFeatures.fillna(0)
-        userItemFeatures = userItemFeatures.fillna(0)
+#       userItemFeatures = userItemFeatures.fillna(0)
         userCategoryFeatures = userCategoryFeatures.fillna(0)
         ## calculate features
         userFeatures         = user_feature_cal(userFeatures)     
-        itemFeatures         = item_feature_cal(itemFeatures)
+#       itemFeatures         = item_feature_cal(itemFeatures)
         categoryFeatures     = category_feature_cal(categoryFeatures)
-        userItemFeatures     = userItemFeatureCal(userItemFeatures)
+#       userItemFeatures     = userItemFeatureCal(userItemFeatures)
         userCategoryFeatures = userCategoryFeatureCal(userCategoryFeatures)
         
         print "Time for calculating features: %.3f" % (time.time() - START_TIME)                                    
 
         ## dump pickle
         dump_pickle(userFeatures, "pickle\\userFeatures.pickle")
-        dump_pickle(itemFeatures, "pickle\\itemFeatures.pickle")    
+#       dump_pickle(itemFeatures, "pickle\\itemFeatures.pickle")    
         dump_pickle(categoryFeatures, "pickle\\categoryFeatures.pickle")
-        dump_pickle(userItemFeatures, "pickle\\userItemFeatures.pickle")    
+#       dump_pickle(userItemFeatures, "pickle\\userItemFeatures.pickle")    
         dump_pickle(userCategoryFeatures, "pickle\\userCategoryFeatures.pickle")     
 
         print "Time for pickle dump: %.3f" % (time.time() - START_TIME)                                    
  
-    return userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures
+    return userFeatures, categoryFeatures, userCategoryFeatures
 
 def user_feature_cal(userFeatures):
     
@@ -284,7 +286,7 @@ def user_feature_cal(userFeatures):
     userFeatures = userFeatures.replace('inf',-999)
     
     return userFeatures
-
+'''
 def item_feature_cal(itemFeatures):
     
     itemFeatures['ViewPerClickDay'] = itemFeatures['Records'] * 1.0 / itemFeatures['ClickDays'] 
@@ -311,7 +313,7 @@ def item_feature_cal(itemFeatures):
     itemFeatures = itemFeatures.replace('inf',-999)  
     
     return itemFeatures
-
+'''
 def category_feature_cal(categoryFeatures):
     
     categoryFeatures['ViewPerClickDay'] = categoryFeatures['Records'] * 1.0 / categoryFeatures['ClickDays'] 
@@ -339,7 +341,7 @@ def category_feature_cal(categoryFeatures):
     categoryFeatures = categoryFeatures.replace('inf',-999)  
 
     return categoryFeatures
-
+'''
 def userItemFeatureCal(userItemFeatures):
     
     userItemFeatures['ViewPerOnlineDay'] = userItemFeatures['Records'] * 1.0 / userItemFeatures['ClickDays'] 
@@ -356,7 +358,7 @@ def userItemFeatureCal(userItemFeatures):
     userItemFeatures = userItemFeatures.replace('inf', -999)
 
     return userItemFeatures
-
+'''
 def userCategoryFeatureCal(userCategoryFeatures):
     
     userCategoryFeatures['ViewPerOnlineDay'] = userCategoryFeatures['Records'] * 1.0 / userCategoryFeatures['ClickDays'] 
@@ -375,18 +377,18 @@ def userCategoryFeatureCal(userCategoryFeatures):
     return userCategoryFeatures
 
 ## combine exacted features with train data
-def featureCombination(train_user, userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures):
+def featureCombination(train_user, userFeatures, categoryFeatures,  userCategoryFeatures):
   
     header = train_user.columns
 
     train_user = train_user.merge(userFeatures, left_on = 'user_id', right_on = 'user_id', how = 'left')
     header = header.append(userFeatures.columns[1::] + '_u'); train_user.columns = header
-    train_user = train_user.merge(itemFeatures, left_on = 'item_id', right_on = 'item_id', how = 'left')
-    header = header.append(itemFeatures.columns[1::] + '_i'); train_user.columns = header
+#    train_user = train_user.merge(itemFeatures, left_on = 'item_id', right_on = 'item_id', how = 'left')
+#    header = header.append(itemFeatures.columns[1::] + '_i'); train_user.columns = header
     train_user = train_user.merge(categoryFeatures, left_on = 'item_category', right_on = 'item_category', how = 'left')
     header = header.append(categoryFeatures.columns[1::] + '_c'); train_user.columns = header   
-    train_user = train_user.merge(userItemFeatures, left_on = 'user_item_pairs', right_on = 'user_item_pairs', how = 'left')
-    header = header.append(userItemFeatures.columns[1::] + '_u&i'); train_user.columns = header   
+#    train_user = train_user.merge(userItemFeatures, left_on = 'user_item_pairs', right_on = 'user_item_pairs', how = 'left')
+#    header = header.append(userItemFeatures.columns[1::] + '_u&i'); train_user.columns = header   
     train_user = train_user.merge(userCategoryFeatures, left_on = 'user_category_pairs', right_on = 'user_category_pairs', how = 'left')
     header = header.append(userCategoryFeatures.columns[1::] + '_u&c'); train_user.columns = header      
     
