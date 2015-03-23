@@ -13,7 +13,7 @@ def readData(itemSize, userSize):   ##size indicates how many records to be invo
     header_item = []
     for i,line in enumerate(item_obj):
         if i == 0:
-            header_item.append[line]
+            header_item.append(line)
         elif (i > 0 and i <= itemSize):
             train_item.append(line)
         else:

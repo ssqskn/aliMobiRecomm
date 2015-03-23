@@ -12,7 +12,7 @@ from sklearn import cross_validation
 
 if __name__ == '__main__':
     
-    USE_SAMPLE_DATA  = True
+    USE_SAMPLE_DATA  = False
     LOAD_FROM_PICKLE = False
     SUBMIT           = False
     
