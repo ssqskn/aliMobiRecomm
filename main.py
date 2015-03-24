@@ -12,11 +12,11 @@ from sklearn import cross_validation
 
 if __name__ == '__main__':
     
-    USE_SAMPLE_DATA  = False
+    USE_SAMPLE_DATA  = True
     LOAD_FROM_PICKLE = True
     SUBMIT           = False
     
-    params = [(30,5,20)]    #ntree, maxfea, leafsize of random forest
+    params = [(30,5,20)]    #ntree, maxfea, leafs ize of random forest
     Nrfs   = 2              #number of random rfs
     kfold  = 3   
      
@@ -28,27 +28,22 @@ if __name__ == '__main__':
     train_user = listToDataFrame(train_user, header_user)
     train_user = data_sort(train_user)   # sort by user-category pairs, time, user_item pair
     ## generate train set
-    trainData = data_preprocess_1(train_user, 15)
+    train = data_preprocess_1(train_user, 15)
     ## user,category feature exaction
     userFeatures, categoryFeatures, userCategoryFeatures = feature_exaction(train_user, LOAD_FROM_PICKLE)
     train_user = featureCombination(train_user, userFeatures, categoryFeatures, userCategoryFeatures)
     train_user = train_user.drop_duplicates(cols = 'user_category_pairs', take_last = True)
     ## features combine
-    trainData  = trainData.merge(train_user, left_on = 'user_category_pairs', right_on = 'user_category_pairs', how = 'left', suffixes = ('','_y'))
+    train  = train.merge(train_user, left_on = 'user_category_pairs', right_on = 'user_category_pairs', how = 'left', suffixes = ('','_y'))
     colForDel = ['user_id_y','item_id_y','behavior_type_y','user_geohash_y','item_category_y','time_y','YYYY_y','MM_y','DD_y','HH_y','Days_y','D&H_y','user_item_pairs_y','item_category_pairs_y']
-
-    trainData.to_csv("data_tmp//feaExtracted.csv")
+    for item in colForDel: del train[item]
+    
+    target = train['if_pay']; del train['if_pay']
+    
+    train.to_csv("data_tmp//feaExtracted.csv")
+    target.to_csv("data_tmp//target.csv")
 #   dump_pickle(trainData, "pickle//feaCombined.pickle")
     
-    ## preprocess
-    
-
-
-
-
-
-
-
 
 '''
     ## training
