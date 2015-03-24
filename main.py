@@ -1,7 +1,6 @@
 #coding=utf-8
 
 import numpy as np
-import time
 from utils import *
 from data_import import *
 from featureExtraction import *
@@ -17,10 +16,10 @@ if __name__ == '__main__':
     LOAD_FROM_PICKLE = True
     SUBMIT           = False
     
-    params = [(30,5,20)]    #ntree, maxfea, leafs ize of random forest
-    Nrfs   = 2              #number of random rfs
+    params = [(30,15,30)]    #ntree, maxfea, leafs ize of random forest
+    Nrfs   = 3              #number of random rfs
     kfold  = 3   
-     
+    
     ## data import
     if USE_SAMPLE_DATA: train_item, header_item, train_user, header_user = readSampleData()
     else:               train_item, header_item, train_user, header_user = readData(itemSize = 100, userSize = 500000)
@@ -36,24 +35,27 @@ if __name__ == '__main__':
     train_user = train_user.drop_duplicates(cols = 'user_category_pairs', take_last = True)
     ## features combine
     train  = train.merge(train_user, left_on = 'user_category_pairs', right_on = 'user_category_pairs', how = 'left', suffixes = ('','_y'))
-    colForDel = ['user_id_y','item_id_y','behavior_type_y','user_geohash_y','item_category_y','time_y','YYYY_y','MM_y','DD_y','HH_y','Days_y','D&H_y','user_item_pairs_y','item_category_pairs_y']
+    colForDel = ['user_id','item_id','item_category','time','YYYY','MM','DD','HH','Days','D&H','user_item_pairs','user_category_pairs',
+                 'item_category_pairs','U&C_lastRecordTime','user_geohash','user_id_y','item_id_y','behavior_type_y','user_geohash_y',
+                 'item_category_y','time_y','YYYY_y','MM_y','DD_y','HH_y','Days_y','D&H_y','user_item_pairs_y','item_category_pairs_y']
     for item in colForDel: del train[item]
+    ## over-sampling
+    for i in range(5):
+        train = train.append(train[train['if_pay'] == 1])
     
-    train = str2num(train)
+    train  = str2num(train) 
     
+    train.to_csv("data_tmp//tmp.csv")
     target = train['if_pay']; del train['if_pay']
     
     train  = np.array(train)
     target = np.array(target)
-        
-    np.savetxt("data_tmp//feaExtracted.csv",train)
-    np.savetxt("data_tmp//target.csv",target)
+    
+    train, target = shuffling(train, target)    
 #   dump_pickle(trainData, "pickle//feaCombined.pickle")
-    
+
     ## training
-    
     START_TIME = time.time()
-    
     rfs        = []
     maxCorrRfs = 0
     ##k-fold division
@@ -100,8 +102,8 @@ if __name__ == '__main__':
 
     validationError = validationError * 1.0 / rnd
     
-    log = ['----Parameters: ', params, '----ErrorRate: ', validationError, '----']
-    print log
+    print '[----Parameters: ', params, '----ErrorRate: ', validationError * 100, '%----]'
+    
     
     
     ## predicting

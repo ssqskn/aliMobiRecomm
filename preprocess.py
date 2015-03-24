@@ -1,6 +1,7 @@
 #coding=utf-8
 
 import pandas as pd
+import random
 from pandas.core.frame import DataFrame
 
 def data_preprocess_1(train_user, Days):
@@ -66,3 +67,9 @@ def data_preprocess_1(train_user, Days):
     del train_record_c1['Day_interval']
     
     return train_record_c1
+
+
+def shuffling(train, target):
+    random.shuffle(train)
+    random.shuffle(target)
+    return train, target

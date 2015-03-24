@@ -1,6 +1,5 @@
 #coding=utf-8
 import pickle
-from pandas.core.frame import DataFrame
 
 ##dump pickle
 def dump_pickle(dct,PATH):
@@ -26,8 +25,7 @@ def data_sort(train_user):
     return train_user    
 
 def str2num(train):
-    
-    
-    
-    
+    header = train.columns
+    for item in header:
+        train[item] = train[item].apply(func = lambda x:round(float(x),3) if type(x) == str else x)
     return train
