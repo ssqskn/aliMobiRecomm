@@ -1,6 +1,7 @@
 #coding=utf-8
 
 import numpy as np
+import time
 from utils import *
 from data_import import *
 from featureExtraction import *
@@ -40,15 +41,16 @@ if __name__ == '__main__':
     
     target = train['if_pay']; del train['if_pay']
     
+    train  = np.array(train)
+    target = np.array(target)
+    
     train.to_csv("data_tmp//feaExtracted.csv")
     target.to_csv("data_tmp//target.csv")
 #   dump_pickle(trainData, "pickle//feaCombined.pickle")
     
-
-'''
     ## training
-    train      = []
-    target     = []
+    
+    START_TIME = time.time()
     
     rfs        = []
     maxCorrRfs = 0
@@ -68,15 +70,19 @@ if __name__ == '__main__':
         target_kf,target_val_kf = target[train_ix],target[val_ix]
         
         Ntrain = len(target_kf)
-        Nval   = len(target_val_kf)        
+        Nval   = len(target_val_kf)
+        
+        print "Start training............: ",(time.time() - START_TIME)         
         ##train
         rfs_trained = fitRForest(train_kf, target_kf, Nrfs, params)
+        print "Stop training.............: ",(time.time() - START_TIME)
         
         if rnd == 1: 
             rfs.append(rfs_trained)
         ##predict training data
         target_pred_rfs = [rfs_trained[i].predict(val_kf) for i in range(len(rfs_trained))] 
         target_pred     = majorityVoting(target_pred_rfs)   
+        print "Prediction time...........: ",(time.time() - START_TIME)
         ##calculate error
         rfs_error       = (target_pred - np.array(target_val_kf))**2
         
@@ -104,4 +110,3 @@ if __name__ == '__main__':
         test_pred = majorityVoting(test_pred_rfs)    
         ##save predictions
         np.savetxt("data\\submission_rf.csv",test_pred)
-    '''
