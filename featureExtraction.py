@@ -27,10 +27,17 @@ def columnProcess(data):
         data[i].append((data[i][0],data[i][4]))
         data[i].append((data[i][1],data[i][4]))
         
-    header = ['user_id','item_id','behavior_type','user_geohash','item_category',
-              'time','YYYY','MM','DD','HH','Days','D&H','user_item_pairs','user_category_pairs','item_category_pairs']
+    header = ['user_id','item_id','behavior_type','user_geohash','item_category','time','YYYY','MM',
+              'DD','HH','Days','D&H','user_item_pairs','user_category_pairs','item_category_pairs']
         
     return data, header
+
+def columnProcess_pd(data):
+    data['D&H']  = data['time'].apply(func = lambda x: float(x.split(' ')[0].split('-')[2]) + float(x.split(' ')[1])/24)
+    print data['D&H']
+    data['user_category_pairs'] = data['user_id'].apply(func = lambda x: str(x) +',') +data['category_id'].apply(func = lambda x: str(x))
+    return data
+
 ##exact features from train data
 def feature_exaction(data, LOAD_FROM_PICKLE):
 #   userFeatures = DataFrame(list(set(data['user_id'])), columns = ['user_id'])

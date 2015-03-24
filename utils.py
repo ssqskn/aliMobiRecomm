@@ -21,7 +21,7 @@ def load_pickle():
     return userFeatures, categoryFeatures, userCategoryFeatures
 
 def data_sort(train_user):
-    train_user = train_user.sort(columns = ['user_category_pairs','D&H','user_item_pairs'])
+    train_user = train_user.sort(columns = ['user_category_pairs','D&H','item_id'])
     return train_user    
 
 def str2num(train):

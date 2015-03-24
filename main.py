@@ -13,19 +13,23 @@ from sklearn import cross_validation
 if __name__ == '__main__':
     
     USE_SAMPLE_DATA  = True
-    LOAD_FROM_PICKLE = True
+    LOAD_FROM_PICKLE = False
     SUBMIT           = False
     
-    params = [(30,15,30)]    #ntree, maxfea, leafs ize of random forest
+    params = [(20,5,20)]    #ntree, maxfea, leafs ize of random forest
     Nrfs   = 3              #number of random rfs
     kfold  = 3   
     
     ## data import
-    if USE_SAMPLE_DATA: train_item, header_item, train_user, header_user = readSampleData()
-    else:               train_item, header_item, train_user, header_user = readData(itemSize = 100, userSize = 500000)
-    
-    train_user, header_user = columnProcess(train_user)
-    train_user = listToDataFrame(train_user, header_user)
+    if USE_SAMPLE_DATA: 
+        train_item, header_item, train_user, header_user = readSampleData()
+        train_user, header_user = columnProcess(train_user)
+        train_user = listToDataFrame(train_user, header_user)
+    else:               
+#       train_item, header_item, train_user, header_user = readData(itemSize = 100, userSize = 500000)
+        train_user, train_item = readData_pd()  
+        train_user = columnProcess_pd(train_user) 
+        
     train_user = data_sort(train_user)   # sort by user-category pairs, time, user_item pair
     ## generate train set
     train = data_preprocess_1(train_user, 15)

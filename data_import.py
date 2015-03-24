@@ -1,6 +1,16 @@
 #coding=utf-8
 
 import csv
+import pandas as pd
+
+def readData_pd():
+    PATH = "data\\"
+    FILE_ITEM = "tianchi_mobile_recommend_train_item.csv"
+    FILE_USER = "tianchi_mobile_recommend_train_user.csv"
+    train_user = pd.read_csv(PATH + FILE_USER)
+#   train_item = pd.read_csv(PATH + FILE_ITEM)
+    train_item = []
+    return train_user, train_item
 
 def readData(itemSize, userSize):   ##size indicates how many records to be involved
     PATH = "data\\"
