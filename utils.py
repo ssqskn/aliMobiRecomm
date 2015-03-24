@@ -24,3 +24,10 @@ def load_pickle():
 def data_sort(train_user):
     train_user = train_user.sort(columns = ['user_category_pairs','D&H','user_item_pairs'])
     return train_user    
+
+def str2num(train):
+    
+    
+    
+    
+    return train

@@ -39,13 +39,15 @@ if __name__ == '__main__':
     colForDel = ['user_id_y','item_id_y','behavior_type_y','user_geohash_y','item_category_y','time_y','YYYY_y','MM_y','DD_y','HH_y','Days_y','D&H_y','user_item_pairs_y','item_category_pairs_y']
     for item in colForDel: del train[item]
     
+    train = str2num(train)
+    
     target = train['if_pay']; del train['if_pay']
     
     train  = np.array(train)
     target = np.array(target)
-    
-    train.to_csv("data_tmp//feaExtracted.csv")
-    target.to_csv("data_tmp//target.csv")
+        
+    np.savetxt("data_tmp//feaExtracted.csv",train)
+    np.savetxt("data_tmp//target.csv",target)
 #   dump_pickle(trainData, "pickle//feaCombined.pickle")
     
     ## training
