@@ -7,7 +7,8 @@ from utils import dump_pickle
 from utils import data_sort, _load_pickle
 from preprocess import data_preprocess_1
 from featureExtraction import user_feature_process, category_feature_process, userCategory_feature_process,\
-    user_feature_cal, category_feature_cal, userCategoryFeatureCal
+    user_feature_cal, category_feature_cal, userCategoryFeatureCal,\
+    item_feature_process
 
 def sqlConnect():
     connect = MySQLdb.connect(host = 'localhost', port = 3306, user = 'root', passwd = 'Aa323232', db   = 'ssqs')    
@@ -60,7 +61,7 @@ def featuresCombination():
 
 if __name__ == '__main__':
     
-    FROM_PICKLE = True
+    FROM_PICKLE = False
     
     if FROM_PICKLE == False:
         cur, connect = sqlConnect()
@@ -185,8 +186,43 @@ if __name__ == '__main__':
             dump_pickle(userCategoryFeatures, "pickle//userCategoryFeatures_"+ str(j) +".pickle")
             del userCategoryFeatures; del data  
         del u_ctgs
+        '''
+        #### item features  ---------count ==  2914411
+        count = cur.execute("select item_id,count(*) from aliMobRec group by item_id")
+        items = np.array(cur.fetchall())
+        step  = 2914          ##   seconds per round
+        rnd   = count / step
+        for j in range(rnd):
+            print "........... Item start round ",j," ................"
+            startTime = time.time()
+            
+            for i in range(step):
+                if (j * step + i) >= count:
+                    break
+                else:
+                    cur.execute("select user_id,item_id,behavior_type,item_category,r_time,user_category_pairs,Days,hours,D_H \
+                                from aliMobRec where item_id = '" + items[(j * step +i),0] + "'")   
+                    if i == 0:
+                        data = pd.DataFrame(list(cur.fetchall()), columns = ['user_id','item_id','behavior_type','item_category','time','user_category_pairs','Days','HH','D&H'])
+                    else:
+                        data = data.append(pd.DataFrame(list(cur.fetchall()),columns = ['user_id','item_id','behavior_type','item_category','time','user_category_pairs','Days','HH','D&H']))
+            
+            data['Days'] = data['Days'].apply(lambda x:int(x))
+            data['HH'] = data['HH'].apply(lambda x:int(x))
+
+            print "round ",j,": ",(time.time() - startTime)
+            ## data_process
+            itemFeatures = item_feature_process(data)
+            ## save train data
+            itemFeatures.to_csv("pickle//itemFeatures_"+ str(j) +".csv")
+            dump_pickle(itemFeatures, "pickle//itemFeatures_"+ str(j) +".pickle")
+            del itemFeatures; del data
+        del items
+        '''
         
+       
         featuresCombination()
     
     else:
         featuresCombination()
+    
