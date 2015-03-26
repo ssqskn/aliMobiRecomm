@@ -63,12 +63,12 @@ if __name__ == '__main__':
             startTime = time.time()
             
             for i in range(step):
-                cur.execute("select user_id,item_id,behavior_type,item_category,r_time,user_category_pairs,Days,D_H \
+                cur.execute("select user_id,item_id,behavior_type,item_category,r_time,user_category_pairs,Days,hours,D_H \
                             from aliMobRec where user_id = '" + users[(j * step +i),0] + "'")   
                 if i == 0:
-                    data = pd.DataFrame(list(cur.fetchall()), columns = ['user_id','item_id','behavior_type','item_category','time','user_category_pairs','Days','D&H'])
+                    data = pd.DataFrame(list(cur.fetchall()), columns = ['user_id','item_id','behavior_type','item_category','time','user_category_pairs','Days','HH','D&H'])
                 else:
-                    data = data.append(pd.DataFrame(list(cur.fetchall()),columns = ['user_id','item_id','behavior_type','item_category','time','user_category_pairs','Days','D&H']))
+                    data = data.append(pd.DataFrame(list(cur.fetchall()),columns = ['user_id','item_id','behavior_type','item_category','time','user_category_pairs','Days','HH','D&H']))
             
             data['Days'] = data['Days'].apply(lambda x:int(x))
             print "round ",j,": ",(time.time() - startTime)
