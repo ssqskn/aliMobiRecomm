@@ -36,7 +36,8 @@ select * from alimobrec order by user_category_pairs LIMIT 0,30;
 select * from alimobrec order by user_id LIMIT 0, 10;
 
 select user_category_pairs,count(*) from alimobrec
-group by user_category_pairs
+group by user_category_pairs;
 
+select * from aliMobRec where user_category_pairs = '100014756,10049';
 
 

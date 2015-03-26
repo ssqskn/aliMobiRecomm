@@ -10,7 +10,7 @@ def data_preprocess_1(train_user, Days):
                                   left_on = 'user_category_pairs', right_index = True, how = 'left')
     header.append('U&C_lastRecordTime'); train_user.columns = header
     
-    train_user['Day_interval'] = train_user['U&C_lastRecordTime'].apply(func=lambda x:int(x)) - train_user['Days']
+    train_user['Day_interval'] = train_user['U&C_lastRecordTime'].apply(func=lambda x:int(x)) - train_user['Days'].apply(func=lambda x:int(x))
     header.append('Day_interval')
     
     train_record_c1 = train_user[(train_user['U&C_lastRecordTime'] == train_user['D&H']) & (train_user['Days'] >= (31 - Days))]
