@@ -421,7 +421,7 @@ def user_feature_cal(userFeatures):
     userFeatures = userFeatures.replace('inf',-999)
     
     return userFeatures
-'''
+
 def item_feature_cal(itemFeatures):
     
     itemFeatures['ViewPerClickDay'] = itemFeatures['Records'] * 1.0 / itemFeatures['ClickDays'] 
@@ -448,7 +448,7 @@ def item_feature_cal(itemFeatures):
     itemFeatures = itemFeatures.replace('inf',-999)  
     
     return itemFeatures
-'''
+
 def category_feature_cal(categoryFeatures):
     
     categoryFeatures['ViewPerClickDay'] = categoryFeatures['Records'] * 1.0 / categoryFeatures['ClickDays'] 

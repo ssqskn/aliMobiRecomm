@@ -8,10 +8,10 @@ from utils import data_sort, _load_pickle
 from preprocess import data_preprocess_1
 from featureExtraction import user_feature_process, category_feature_process, userCategory_feature_process,\
     user_feature_cal, category_feature_cal, userCategoryFeatureCal,\
-    item_feature_process
+    item_feature_process, item_feature_cal, featureCombination
 
 def sqlConnect():
-    connect = MySQLdb.connect(host = 'localhost', port = 3306, user = 'root', passwd = 'Aa323232', db   = 'ssqs')    
+    connect = MySQLdb.connect(host = 'localhost', port = 3306, user = 'root', passwd = 'Aa323232', db   = 'scott')    
     cur     = connect.cursor()
     return cur, connect
 
@@ -40,6 +40,20 @@ def featuresCombination():
     dump_pickle(categoryFeatures, PATH + "categoryFeatures_ALL.pickle")
     del categoryFeatures
     
+    '''
+    print "----------implementing item features combination----------"    
+    for i in range(1000):
+        print i
+        if i == 0:
+            itemFeatures = _load_pickle(PATH + "itemFeatures_" + str(i) +".pickle")
+        else:
+            itemFeatures = itemFeatures.append(_load_pickle(PATH + "itemFeatures_" + str(i) +".pickle"))
+    #itemFeatures = item_feature_cal(itemFeatures)
+    itemFeatures.to_csv(PATH + "itemFeatures_ALL.csv")
+    dump_pickle(itemFeatures, PATH + "itemFeatures_ALL.pickle")
+    del itemFeatures
+    '''
+    
     for i in range(100):
         print "----------implementing user-category features processing------ round: ",i,"----------"
         userCategoryFeatures = _load_pickle(PATH + "userCategoryFeatures_" + str(i) +".pickle")
@@ -53,19 +67,40 @@ def featuresCombination():
         train.to_csv(PATH + "train_I_" + str(i) +".csv")
     del userCategoryFeatures; del train
     
-    ### implementing combination
-    pass
     
+def generateTrain():
+    PATH = 'pickle\\'
+    for i in range(100):
+        print "----------implementing train set processing------ round: ",i,"---------"
+        train = _load_pickle(PATH + "train_I_" + str(i) +".pickle")
+        userCategoryFeatures = _load_pickle(PATH + "userCategoryFeatures_" + str(i) +".pickle")
+        userFeatures = _load_pickle(PATH + "userFeatures_ALL.pickle")
+        categoryFeatures = _load_pickle(PATH + "categoryFeatures_ALL.pickle")
+        
+        train = featureCombination(train, userFeatures, categoryFeatures,  userCategoryFeatures)
+        dump_pickle(train, PATH + "train_part_" + str(i) +".pickle") 
+        train.to_csv(PATH + "train_part_" + str(i) +".csv")
+        del train; del userCategoryFeatures; del userFeatures; del categoryFeatures
     
-    
+    print "-------------------combination of train data-------------------"
+    for r in range(4):
+        for i in range(25):
+            if i == 0:
+                train = pd.read_csv(PATH + "train_part_" + str(r*20 + i) + ".csv")
+            else:
+                train = train.append(pd.read_csv(PATH + "train_part_" + str(r*20 + i) + ".csv"))
+        train.fillna(0)
+        train.to_csv(PATH + "train" + str(r) + ".csv")
+        del train
+
 
 if __name__ == '__main__':
     
-    FROM_PICKLE = False
+    FROM_PICKLE = True
     
     if FROM_PICKLE == False:
         cur, connect = sqlConnect()
-        '''
+        
         count = cur.execute("select user_category_pairs,count(*) from aliMobRec group by user_category_pairs")
         user_category_pairs = np.array(cur.fetchall())
         ## count = 903136, total records around 12312542; 36000 per step
@@ -154,7 +189,7 @@ if __name__ == '__main__':
             dump_pickle(categoryFeatures, "pickle//categoryFeatures_"+ str(j) +".pickle")
             del categoryFeatures; del data
         del ctgs
-        '''
+        
         #### user_category features  ---------count == 903136
         count = cur.execute("select user_category_pairs,count(*) from aliMobRec group by user_category_pairs")
         u_ctgs = np.array(cur.fetchall())
@@ -186,11 +221,11 @@ if __name__ == '__main__':
             dump_pickle(userCategoryFeatures, "pickle//userCategoryFeatures_"+ str(j) +".pickle")
             del userCategoryFeatures; del data  
         del u_ctgs
-        '''
+        
         #### item features  ---------count ==  2914411
         count = cur.execute("select item_id,count(*) from aliMobRec group by item_id")
         items = np.array(cur.fetchall())
-        step  = 2914          ##   seconds per round
+        step  = 2914          ##  8 seconds per round
         rnd   = count / step
         for j in range(rnd):
             print "........... Item start round ",j," ................"
@@ -218,11 +253,9 @@ if __name__ == '__main__':
             dump_pickle(itemFeatures, "pickle//itemFeatures_"+ str(j) +".pickle")
             del itemFeatures; del data
         del items
-        '''
         
-       
         featuresCombination()
     
     else:
-        featuresCombination()
+        generateTrain()
     

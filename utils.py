@@ -5,6 +5,7 @@ import pickle
 def dump_pickle(dct,PATH):
     with open(PATH, 'wb') as f:
         pickle.dump(dct, f)
+    f.close()
         
 ##reload pickle
 def _load_pickle(PATH):
