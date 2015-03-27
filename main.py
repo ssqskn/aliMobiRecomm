@@ -12,7 +12,6 @@ from sklearn import cross_validation
 if __name__ == '__main__':
     
     USE_SAMPLE_DATA  = True
-    LOAD_FROM_PICKLE = False
     SUBMIT           = False
     OVERSAMPLINGRATE = 5
     
@@ -29,19 +28,19 @@ if __name__ == '__main__':
         train.append(pd.read_csv(PATH + "train1.csv"))
 #       train.append(pd.read_csv(PATH + "train2.csv"))
 #       train.append(pd.read_csv(PATH + "train3.csv"))
-        
+    del train['Unnamed: 0']; del train['user_id']; del train['item_id']
+    del train['item_category']; del train['time']; del train['user_category_pairs']
+    del train['Days']; del train['D&H']; del train['U&C_lastRecordTime']
     ## over-sampling
     for i in range(OVERSAMPLINGRATE):
         train = train.append(train[train['if_pay'] == 1])
     train  = str2num(train) 
     
+    train  = shuffling(train); del train['rand']; del train['Unnamed: 0.1']
     target = train['if_pay']; del train['if_pay']
-
-    train  = np.array(train)
-    target = np.array(target)
     
-    train, target = shuffling(train, target)  
-
+    train.to_csv("debug\\train.csv")
+    target.to_csv("debug\\target.csv")
     ## training
     START_TIME = time.time()
     rfs        = []
@@ -91,7 +90,6 @@ if __name__ == '__main__':
     validationError = validationError * 1.0 / rnd
     
     print '[----Parameters: ', params, '----ErrorRate: ', validationError * 100, '%----]'
-    
     
     
     ## predicting

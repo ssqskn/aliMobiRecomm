@@ -1,6 +1,7 @@
 #coding=utf-8
 import pickle
-import random
+import pandas as pd
+import numpy as np
 
 ##dump pickle
 def dump_pickle(dct,PATH):
@@ -32,7 +33,9 @@ def str2num(train):
         train[item] = train[item].apply(func = lambda x:round(float(x),3) if type(x) == str else x)
     return train
 
-def shuffling(train, target):
-    random.shuffle(train)
-    random.shuffle(target)
-    return train, target
+def shuffling(train):
+    Idx = train.index.values
+    rands = pd.Series(np.random.random_sample(len(Idx)), index = Idx)
+    train['rand'] = rands
+    train.sort(['rand'], inplace = 1)
+    return train
