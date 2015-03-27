@@ -1,5 +1,6 @@
 #coding=utf-8
 import pickle
+import random
 
 ##dump pickle
 def dump_pickle(dct,PATH):
@@ -30,3 +31,8 @@ def str2num(train):
     for item in header:
         train[item] = train[item].apply(func = lambda x:round(float(x),3) if type(x) == str else x)
     return train
+
+def shuffling(train, target):
+    random.shuffle(train)
+    random.shuffle(target)
+    return train, target

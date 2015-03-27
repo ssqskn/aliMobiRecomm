@@ -5,10 +5,9 @@ import numpy as np
 import pandas as pd
 from utils import dump_pickle
 from utils import data_sort, _load_pickle
-from preprocess import data_preprocess_1
 from featureExtraction import user_feature_process, category_feature_process, userCategory_feature_process,\
-    user_feature_cal, category_feature_cal, userCategoryFeatureCal,\
-    item_feature_process, item_feature_cal, featureCombination
+    user_feature_cal, category_feature_cal, userCategoryFeatureCal, item_feature_process, item_feature_cal, \
+    featureCombination, data_preprocess_1
 
 def sqlConnect():
     connect = MySQLdb.connect(host = 'localhost', port = 3306, user = 'root', passwd = 'Aa323232', db   = 'scott')    
@@ -257,5 +256,6 @@ if __name__ == '__main__':
         featuresCombination()
     
     else:
+        featuresCombination()
         generateTrain()
     

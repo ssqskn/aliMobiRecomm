@@ -1,10 +1,9 @@
 #coding=utf-8
 
+import time
+import pandas as pd
 import numpy as np
-from utils import *
-from data_import import *
-from featureExtraction import *
-from preprocess import*
+from utils import str2num, shuffling
 from randomForest import fitRForest
 from voting import majorityVoting
 from sklearn import cross_validation
@@ -15,48 +14,33 @@ if __name__ == '__main__':
     USE_SAMPLE_DATA  = True
     LOAD_FROM_PICKLE = False
     SUBMIT           = False
+    OVERSAMPLINGRATE = 5
     
     params = [(20,5,20)]    #ntree, maxfea, leafs ize of random forest
     Nrfs   = 3              #number of random rfs
     kfold  = 3   
     
     ## data import
+    PATH = "pickle\\"
     if USE_SAMPLE_DATA: 
-        train_item, header_item, train_user, header_user = readSampleData()
-        train_user, header_user = columnProcess(train_user)
-        train_user = listToDataFrame(train_user, header_user)
+        train = pd.read_csv(PATH + "train0.csv")
     else:               
-#       train_item, header_item, train_user, header_user = readData(itemSize = 100, userSize = 500000)
-        train_user, train_item = readData_pd()  
-        train_user = columnProcess_pd(train_user) 
+        train = pd.read_csv(PATH + "train0.csv")
+        train.append(pd.read_csv(PATH + "train1.csv"))
+#       train.append(pd.read_csv(PATH + "train2.csv"))
+#       train.append(pd.read_csv(PATH + "train3.csv"))
         
-    train_user = data_sort(train_user)   # sort by user-category pairs, time, user_item pair
-    ## generate train set
-    train = data_preprocess_1(train_user, 15)
-    ## user,category feature exaction
-    userFeatures, categoryFeatures, userCategoryFeatures = feature_exaction(train_user, LOAD_FROM_PICKLE)
-    train_user = featureCombination(train_user, userFeatures, categoryFeatures, userCategoryFeatures)
-    train_user = train_user.drop_duplicates(cols = 'user_category_pairs', take_last = True)
-    ## features combine
-    train  = train.merge(train_user, left_on = 'user_category_pairs', right_on = 'user_category_pairs', how = 'left', suffixes = ('','_y'))
-    colForDel = ['user_id','item_id','item_category','time','YYYY','MM','DD','HH','Days','D&H','user_item_pairs','user_category_pairs',
-                 'item_category_pairs','U&C_lastRecordTime','user_geohash','user_id_y','item_id_y','behavior_type_y','user_geohash_y',
-                 'item_category_y','time_y','YYYY_y','MM_y','DD_y','HH_y','Days_y','D&H_y','user_item_pairs_y','item_category_pairs_y']
-    for item in colForDel: del train[item]
     ## over-sampling
-    for i in range(5):
+    for i in range(OVERSAMPLINGRATE):
         train = train.append(train[train['if_pay'] == 1])
-    
     train  = str2num(train) 
     
-    train.to_csv("data_tmp//tmp.csv")
     target = train['if_pay']; del train['if_pay']
-    
+
     train  = np.array(train)
     target = np.array(target)
     
-    train, target = shuffling(train, target)    
-#   dump_pickle(trainData, "pickle//feaCombined.pickle")
+    train, target = shuffling(train, target)  
 
     ## training
     START_TIME = time.time()
@@ -117,4 +101,4 @@ if __name__ == '__main__':
         test_pred_rfs = [rfs[i].predict(test) for i in range(len(rfs))]
         test_pred = majorityVoting(test_pred_rfs)    
         ##save predictions
-        np.savetxt("data\\submission_rf.csv",test_pred)
+        np.savetxt("data\\submission\\submission_rf.csv",test_pred)

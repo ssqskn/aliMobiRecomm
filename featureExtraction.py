@@ -166,237 +166,6 @@ def columnProcess_pd(data):
     data['user_category_pairs'] = data['user_id'].apply(func = lambda x: str(x) +',') +data['category_id'].apply(func = lambda x: str(x))
     return data
 
-##exact features from train data
-def feature_exaction(data, LOAD_FROM_PICKLE):
-#   userFeatures = DataFrame(list(set(data['user_id'])), columns = ['user_id'])
-#   userFeatures = DataFrame(pd.unique(data['user_id']), columns = ['user_id'])
-    START_TIME = time.time()
-    '''   
-    userDict = {}
-    itemDict = {}
-    categoryDict = {}
-    userItemDict = {}
-    userCategoryDict = {}
-
-    for i in range(count):
-        if not userDict.has_key(data.ix[i,'user_id']):
-            userDict[data.ix[i,'user_id']]             = {}
-        if not itemDict.has_key(data.ix[i,'item_id']):
-            itemDict[data.ix[i,'item_id']]             = {}
-        if not categoryDict.has_key(data.ix[i,'item_category']):
-            categoryDict[data.ix[i,'item_category']]   = {}
-        if not userItemDict.has_key(data.ix[i,'user_item_pairs']):
-            userItemDict[data.ix[i,'user_item_pairs']] = {}
-        if not userCategoryDict.has_key(data.ix[i,'user_category_pairs']):
-            userCategoryDict[data.ix[i,'user_category_pairs']]   = {}
-
-    #############################
-    ###exact features for user###
-    #############################
-    for i in range(count):
-        ##records
-        if not userDict[data.ix[i,'user_id']].has_key('records'):
-            userDict[data.ix[i,'user_id']]['records'] = 1
-        else: userDict[data.ix[i,'user_id']]['records'] += 1
-        
-    ##items&categories per user
-    for item in userDict:
-        userDict[item]['itemCount'] = len(pd.unique(data[data['user_id'] == item]['item_id']))
-        userDict[item]['categoryCount'] = len(pd.unique(data[data['user_id'] == item]['item_category']))
-        userDict[item]['OnlineDays'] = len(pd.unique(data[data['user_id'] == item]['Days']))
-        userDict[item]['Period']     = max(data[data['user_id'] == item]['Days']) - min(data[data['user_id'] == item]['Days'])
-    
-    dump_pickle(userDict, "pickle\\userDict.pickle")
-    dump_pickle(itemDict, "pickle\\itemDict.pickle")
-    dump_pickle(categoryDict, "pickle\\categoryDict.pickle")
-    dump_pickle(userItemDict, "pickle\\userItemDict.pickle")    
-    dump_pickle(userCategoryDict, "pickle\\userCategoryDict.pickle")       
-    
-    userDict, itemDict, categoryDict, userItemDict, userCategoryDict = load_pickle() 
-      
-    return userDict, itemDict, categoryDict, userItemDict, userCategoryDict
-       
-    '''   
-    if LOAD_FROM_PICKLE:
-        userFeatures, categoryFeatures, userCategoryFeatures = load_pickle()
-    else:
-        ## features of user
-        userFeaCol   = ['user_id']
-        userFeatures = DataFrame(data['user_id'].unique(), columns = userFeaCol)
-        userFeatures = userFeatures.merge(DataFrame(data.pivot_table(values = 'item_id', rows='user_id', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('itemCount')
-        userFeatures = userFeatures.merge(DataFrame(data.pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('records')
-        userFeatures = userFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_id', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('Online_Days')
-        userFeatures = userFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_id', aggfunc = lambda x: max(x) - min(x) + 1)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('Period')
-        userFeatures = userFeatures.merge(DataFrame(data[data['behavior_type'] == '1'].pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('Behavior_1'); userFeatures.columns = userFeaCol
-        userFeatures = userFeatures.merge(DataFrame(data[data['behavior_type'] == '2'].pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('Behavior_2'); userFeatures.columns = userFeaCol
-        userFeatures = userFeatures.merge(DataFrame(data[data['behavior_type'] == '3'].pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('Behavior_3'); userFeatures.columns = userFeaCol
-        userFeatures = userFeatures.merge(DataFrame(data[data['behavior_type'] == '4'].pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('Behavior_4'); userFeatures.columns = userFeaCol
-        userFeatures = userFeatures.merge(DataFrame(data[((data['HH'] >= 18) & (data['HH'] <= 24))].pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('records_evening'); userFeatures.columns = userFeaCol
-        userFeatures = userFeatures.merge(DataFrame(data[((data['HH'] >= 0) & (data['HH'] <= 7))].pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('records_midnight'); userFeatures.columns = userFeaCol
-        userFeatures = userFeatures.merge(DataFrame(data[((data['HH'] >= 13) & (data['HH'] <= 17))].pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('records_afternoon'); userFeatures.columns = userFeaCol
-        userFeatures = userFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'item_id', rows='user_id', aggfunc = len)),
-                                          left_on = 'user_id', right_index = True, how = 'left'); userFeaCol.append('records_morning'); userFeatures.columns = userFeaCol   
-
-        print "Time for user feature exaction: %.3f" % (time.time() - START_TIME)
-        
-        '''
-        ## features of item
-        itemFeaCol = ['item_id']
-        itemFeatures = DataFrame(data['item_id'].unique(), columns = itemFeaCol)
-        itemFeatures = itemFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='item_id', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'item_id', right_index = True); itemFeaCol.append('userCount'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True); itemFeaCol.append('Records'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='item_id', aggfunc = lambda x:max(x) - min(x) + 1)),
-                                          left_on = 'item_id', right_index = True); itemFeaCol.append('Period'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='item_id', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'item_id', right_index = True); itemFeaCol.append('ClickDays'); itemFeatures.columns = itemFeaCol        
-        itemFeatures = itemFeatures.merge(DataFrame(data[data['behavior_type'] == '1'].pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('Behavior_1'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data[data['behavior_type'] == '2'].pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('Behavior_2'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data[data['behavior_type'] == '3'].pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('Behavior_3'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data[data['behavior_type'] == '4'].pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('Behavior_4'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data[((data['HH'] >= 18) & (data['HH'] <= 24))].pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('records_evening'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data[((data['HH'] >= 0) & (data['HH'] <= 7))].pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('records_midnight'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data[((data['HH'] >= 13) & (data['HH'] <= 17))].pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('records_afternoon'); itemFeatures.columns = itemFeaCol
-        itemFeatures = itemFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'user_id', rows='item_id', aggfunc = len)),
-                                          left_on = 'item_id', right_index = True, how = 'left'); itemFeaCol.append('records_morning'); itemFeatures.columns = itemFeaCol   
-                            
-        print "Time for item feature exaction: %.3f" % (time.time() - START_TIME)                                    
-        '''
-        ## features of category
-        categoryFeaCol = ['item_category']
-        categoryFeatures = DataFrame(data['item_category'].unique(), columns = categoryFeaCol)
-        categoryFeatures = categoryFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='item_category', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'item_category', right_index = True); categoryFeaCol.append('userCount'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True); categoryFeaCol.append('Records'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='item_category', aggfunc = lambda x:max(x) - min(x) + 1)),
-                                          left_on = 'item_category', right_index = True); categoryFeaCol.append('Period'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='item_category', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'item_category', right_index = True); categoryFeaCol.append('ClickDays'); categoryFeatures.columns = categoryFeaCol        
-        categoryFeatures = categoryFeatures.merge(DataFrame(data[data['behavior_type'] == '1'].pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('Behavior_1'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data[data['behavior_type'] == '2'].pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('Behavior_2'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data[data['behavior_type'] == '3'].pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('Behavior_3'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data[data['behavior_type'] == '4'].pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('Behavior_4'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data[((data['HH'] >= 18) & (data['HH'] <= 24))].pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('records_evening'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data[((data['HH'] >= 0) & (data['HH'] <= 7))].pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('records_midnight'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data[((data['HH'] >= 13) & (data['HH'] <= 17))].pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('records_afternoon'); categoryFeatures.columns = categoryFeaCol
-        categoryFeatures = categoryFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'user_id', rows='item_category', aggfunc = len)),
-                                          left_on = 'item_category', right_index = True, how = 'left'); categoryFeaCol.append('records_morning'); categoryFeatures.columns = categoryFeaCol   
- 
-        print "Time for category feature exaction: %.3f" % (time.time() - START_TIME)                                    
-        
-        '''
-        ## features of userItem
-        userItemFeaCol = ['user_item_pairs']
-        userItemFeatures = DataFrame(data['user_item_pairs'].unique(), columns = userItemFeaCol)
-        userItemFeatures = userItemFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'user_item_pairs', right_index = True); userItemFeaCol.append('userCount'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True); userItemFeaCol.append('Records'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_item_pairs', aggfunc = lambda x:max(x) - min(x) + 1)),
-                                          left_on = 'user_item_pairs', right_index = True); userItemFeaCol.append('Period'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_item_pairs', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'user_item_pairs', right_index = True); userItemFeaCol.append('ClickDays'); userItemFeatures.columns = userItemFeaCol        
-        userItemFeatures = userItemFeatures.merge(DataFrame(data[data['behavior_type'] == '1'].pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('Behavior_1'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data[data['behavior_type'] == '2'].pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('Behavior_2'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data[data['behavior_type'] == '3'].pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('Behavior_3'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data[data['behavior_type'] == '4'].pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('Behavior_4'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data[((data['HH'] >= 18) & (data['HH'] <= 24))].pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('records_evening'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data[((data['HH'] >= 0) & (data['HH'] <= 7))].pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('records_midnight'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data[((data['HH'] >= 13) & (data['HH'] <= 17))].pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('records_afternoon'); userItemFeatures.columns = userItemFeaCol
-        userItemFeatures = userItemFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'user_id', rows='user_item_pairs', aggfunc = len)),
-                                          left_on = 'user_item_pairs', right_index = True, how = 'left'); userItemFeaCol.append('records_morning'); userItemFeatures.columns = userItemFeaCol   
-
-        print "Time for user-item feature exaction: %.3f" % (time.time() - START_TIME)                                    
-        '''
-        ## features of user-Category
-        userCategoryFeaCol = ['user_category_pairs']
-        userCategoryFeatures = DataFrame(data['user_category_pairs'].unique(), columns = userCategoryFeaCol)
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'user_category_pairs', right_index = True); userCategoryFeaCol.append('userCount'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data.pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True); userCategoryFeaCol.append('Records'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_category_pairs', aggfunc = lambda x:max(x) - min(x) + 1)),
-                                          left_on = 'user_category_pairs', right_index = True); userCategoryFeaCol.append('Period'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data.pivot_table(values = 'Days', rows='user_category_pairs', aggfunc = lambda x:len(x.unique()))),
-                                          left_on = 'user_category_pairs', right_index = True); userCategoryFeaCol.append('ClickDays'); userCategoryFeatures.columns = userCategoryFeaCol        
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data[data['behavior_type'] == '1'].pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True, how = 'left'); userCategoryFeaCol.append('Behavior_1'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data[data['behavior_type'] == '2'].pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True, how = 'left'); userCategoryFeaCol.append('Behavior_2'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data[data['behavior_type'] == '3'].pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True, how = 'left'); userCategoryFeaCol.append('Behavior_3'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data[data['behavior_type'] == '4'].pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True, how = 'left'); userCategoryFeaCol.append('Behavior_4'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data[((data['HH'] >= 18) & (data['HH'] <= 24))].pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True, how = 'left'); userCategoryFeaCol.append('records_evening'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data[((data['HH'] >= 0) & (data['HH'] <= 7))].pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True, how = 'left'); userCategoryFeaCol.append('records_midnight'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data[((data['HH'] >= 13) & (data['HH'] <= 17))].pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True, how = 'left'); userCategoryFeaCol.append('records_afternoon'); userCategoryFeatures.columns = userCategoryFeaCol
-        userCategoryFeatures = userCategoryFeatures.merge(DataFrame(data[((data['HH'] >= 8) & (data['HH'] <= 12))].pivot_table(values = 'user_id', rows='user_category_pairs', aggfunc = len)),
-                                          left_on = 'user_category_pairs', right_index = True, how = 'left'); userCategoryFeaCol.append('records_morning'); userCategoryFeatures.columns = userCategoryFeaCol   
-
-        print "Time for user-category feature exaction: %.3f" % (time.time() - START_TIME)                                                                   
-        
-        ## fill na by 0
-        userFeatures = userFeatures.fillna(0)
-#       itemFeatures = itemFeatures.fillna(0)
-        categoryFeatures = categoryFeatures.fillna(0)
-#       userItemFeatures = userItemFeatures.fillna(0)
-        userCategoryFeatures = userCategoryFeatures.fillna(0)
-        ## calculate features
-        userFeatures         = user_feature_cal(userFeatures)     
-#       itemFeatures         = item_feature_cal(itemFeatures)
-        categoryFeatures     = category_feature_cal(categoryFeatures)
-#       userItemFeatures     = userItemFeatureCal(userItemFeatures)
-        userCategoryFeatures = userCategoryFeatureCal(userCategoryFeatures)
-        
-        print "Time for calculating features: %.3f" % (time.time() - START_TIME)                                    
-
-        ## dump pickle
-        dump_pickle(userFeatures, "pickle\\userFeatures.pickle")
-#       dump_pickle(itemFeatures, "pickle\\itemFeatures.pickle")    
-        dump_pickle(categoryFeatures, "pickle\\categoryFeatures.pickle")
-#       dump_pickle(userItemFeatures, "pickle\\userItemFeatures.pickle")    
-        dump_pickle(userCategoryFeatures, "pickle\\userCategoryFeatures.pickle")     
-
-        print "Time for pickle dump: %.3f" % (time.time() - START_TIME)                                    
- 
-    return userFeatures, categoryFeatures, userCategoryFeatures
 
 def user_feature_cal(userFeatures):
     
@@ -476,24 +245,7 @@ def category_feature_cal(categoryFeatures):
     categoryFeatures = categoryFeatures.replace('inf',-999)  
 
     return categoryFeatures
-'''
-def userItemFeatureCal(userItemFeatures):
-    
-    userItemFeatures['ViewPerOnlineDay'] = userItemFeatures['Records'] * 1.0 / userItemFeatures['ClickDays'] 
-    userItemFeatures['MorningProp'] = userItemFeatures['records_morning'] * 1.0 / userItemFeatures['Records']        
-    userItemFeatures['AfternoonProp'] = userItemFeatures['records_afternoon'] * 1.0 / userItemFeatures['Records']   
-    userItemFeatures['EveningProp'] = userItemFeatures['records_evening'] * 1.0 / userItemFeatures['Records']        
-    userItemFeatures['MidnightProp'] = userItemFeatures['records_midnight'] * 1.0 / userItemFeatures['Records']          
-    userItemFeatures['ViewProp'] = userItemFeatures['Behavior_1'] * 1.0 / userItemFeatures['Records']            
-    userItemFeatures['FavorProp'] = userItemFeatures['Behavior_2'] * 1.0 / userItemFeatures['Records']            
-    userItemFeatures['CartProp'] = userItemFeatures['Behavior_3'] * 1.0 / userItemFeatures['Records']            
-    userItemFeatures['PayProp'] = userItemFeatures['Behavior_4'] * 1.0 / userItemFeatures['Records']       
-    
-    userItemFeatures = userItemFeatures.fillna(0)
-    userItemFeatures = userItemFeatures.replace('inf', -999)
 
-    return userItemFeatures
-'''
 def userCategoryFeatureCal(userCategoryFeatures):
     
     userCategoryFeatures['ViewPerOnlineDay'] = userCategoryFeatures['Records'] * 1.0 / userCategoryFeatures['ClickDays'] 
@@ -522,29 +274,72 @@ def featureCombination(train_user, userFeatures, categoryFeatures,  userCategory
 #    header = header.append(itemFeatures.columns[1::] + '_i'); train_user.columns = header
     train_user = train_user.merge(categoryFeatures, left_on = 'item_category', right_on = 'item_category', how = 'left')
     header = header.append(categoryFeatures.columns[1::] + '_c'); train_user.columns = header   
-#    train_user = train_user.merge(userItemFeatures, left_on = 'user_item_pairs', right_on = 'user_item_pairs', how = 'left')
-#    header = header.append(userItemFeatures.columns[1::] + '_u&i'); train_user.columns = header   
+   
     train_user = train_user.merge(userCategoryFeatures, left_on = 'user_category_pairs', right_on = 'user_category_pairs', how = 'left')
     header = header.append(userCategoryFeatures.columns[1::] + '_u&c'); train_user.columns = header      
     
     return train_user
 
-
-if __name__ == '__main__':
-
-    LOAD_FROM_PICKLE = True
-#   train_item, header_item, train_user, header_user = readData(itemSize = 1000000, userSize = 10000000)   
-    train_item, header_item, train_user, header_user = readSampleData()
-    train_user, header_user = columnProcess(train_user)
-    train_user = listToDataFrame(train_user, header_user)
+def data_preprocess_1(train_user, Days):
+    header = train_user.columns.tolist()
+    train_user = train_user.merge(DataFrame(train_user.pivot_table(values = 'D&H', rows = 'user_category_pairs', aggfunc = 'max')),
+                                  left_on = 'user_category_pairs', right_index = True, how = 'left')
+    header.append('U&C_lastRecordTime'); train_user.columns = header
     
-    userFeatures, itemFeatures, categoryFeatures, userItemFeatures, userCategoryFeatures =feature_exaction(train_user, LOAD_FROM_PICKLE)
-
-
+    train_user['Day_interval'] = train_user['U&C_lastRecordTime'].apply(func=lambda x:int(x)) - train_user['Days'].apply(func=lambda x:int(x))
+    header.append('Day_interval')
     
+    train_record_c1 = train_user[(train_user['U&C_lastRecordTime'] == train_user['D&H']) & (train_user['Days'] >= (31 - Days))]
+    train_record_c1 = train_record_c1.merge(DataFrame(train_record_c1[train_record_c1['behavior_type'] == '4'].pivot_table(values = 'D&H', rows = 'user_category_pairs', aggfunc = lambda x: 1 if len(x) > 0 else 0)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header.append('if_pay'); train_record_c1.columns = header            
+    ##features of c1_last15
+    c1_last15 = train_user[((train_user['Day_interval'] <= 15) & (train_user['Day_interval'] > 0))]
+    c1_last15_fea = DataFrame(c1_last15.user_category_pairs.unique(), columns = ['user_category_pairs']); header_c1_last15_fea = ['user_category_pairs']
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[c1_last15['behavior_type'] == '1'].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('viewCount_L15'); c1_last15_fea.columns = header_c1_last15_fea
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[c1_last15['behavior_type'] == '2'].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L15'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[c1_last15['behavior_type'] == '3'].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L15'); c1_last15_fea.columns = header_c1_last15_fea        
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[c1_last15['behavior_type'] == '4'].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L15'); c1_last15_fea.columns = header_c1_last15_fea                   
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[c1_last15['behavior_type'] == '1'].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = 'min')),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('lastViewInterval'); c1_last15_fea.columns = header_c1_last15_fea                   
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[c1_last15['behavior_type'] == '2'].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = 'min')),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('lastFavorInterval'); c1_last15_fea.columns = header_c1_last15_fea                    
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[c1_last15['behavior_type'] == '3'].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = 'min')),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('lastCartInterval'); c1_last15_fea.columns = header_c1_last15_fea                   
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[c1_last15['behavior_type'] == '4'].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = 'min')),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('lastPayInterval'); c1_last15_fea.columns = header_c1_last15_fea                   
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '1')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('viewCount_L7'); c1_last15_fea.columns = header_c1_last15_fea
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '2')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L7'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '3')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L7'); c1_last15_fea.columns = header_c1_last15_fea        
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '4')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L7'); c1_last15_fea.columns = header_c1_last15_fea                   
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '1')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('viewCount_L3'); c1_last15_fea.columns = header_c1_last15_fea
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '2')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L3'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '3')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L3'); c1_last15_fea.columns = header_c1_last15_fea        
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '4')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L3'); c1_last15_fea.columns = header_c1_last15_fea                   
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '1')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('viewCount_L1'); c1_last15_fea.columns = header_c1_last15_fea
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '2')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L1'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '3')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L1'); c1_last15_fea.columns = header_c1_last15_fea        
+    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '4')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L1'); c1_last15_fea.columns = header_c1_last15_fea                            
+                                        
+    # generate train set
+    train_record_c1 = train_record_c1.drop_duplicates(cols = 'user_category_pairs', take_last = True)
+    train_record_c1 = train_record_c1.merge(c1_last15_fea, on = 'user_category_pairs', how = 'left')
+    train_record_c1 = train_record_c1.fillna(0)
+    del train_record_c1['Day_interval']
     
-    
-    
-    
-    
-    
+    return train_record_c1
