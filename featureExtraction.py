@@ -280,20 +280,24 @@ def featureCombination(train_user, userFeatures, categoryFeatures,  userCategory
     
     return train_user
 
-def data_preprocess_1(train_user, Days):
+
+def data_preprocess_1(train_user, Days, TEST):
     header = train_user.columns.tolist()
     train_user = train_user.merge(DataFrame(train_user.pivot_table(values = 'D&H', rows = 'user_category_pairs', aggfunc = 'max')),
                                   left_on = 'user_category_pairs', right_index = True, how = 'left')
     header.append('U&C_lastRecordTime'); train_user.columns = header
-    
     train_user['Day_interval'] = train_user['U&C_lastRecordTime'].apply(func=lambda x:int(x)) - train_user['Days'].apply(func=lambda x:int(x))
     header.append('Day_interval')
-    
+
     train_record_c1 = train_user[(train_user['U&C_lastRecordTime'] == train_user['D&H']) & (train_user['Days'] >= (31 - Days))]
     train_record_c1 = train_record_c1.merge(DataFrame(train_record_c1[train_record_c1['behavior_type'] == '4'].pivot_table(values = 'D&H', rows = 'user_category_pairs', aggfunc = lambda x: 1 if len(x) > 0 else 0)),
                                             left_on = 'user_category_pairs', right_index = True, how = 'left'); header.append('if_pay'); train_record_c1.columns = header            
     ##features of c1_last15
-    c1_last15 = train_user[((train_user['Day_interval'] <= 15) & (train_user['Day_interval'] > 0))]
+    if TEST == True:
+        c1_last15 = train_user[((train_user['Day_interval'] <= 15) & (train_user['Day_interval'] >= 0))]
+    else:
+        c1_last15 = train_user[((train_user['Day_interval'] <= 15) & (train_user['Day_interval'] > 0))]
+    
     c1_last15_fea = DataFrame(c1_last15.user_category_pairs.unique(), columns = ['user_category_pairs']); header_c1_last15_fea = ['user_category_pairs']
     c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[c1_last15['behavior_type'] == '1'].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
                                         left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('viewCount_L15'); c1_last15_fea.columns = header_c1_last15_fea
@@ -313,30 +317,49 @@ def data_preprocess_1(train_user, Days):
                                         left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('lastPayInterval'); c1_last15_fea.columns = header_c1_last15_fea                   
     c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '1')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
                                         left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('viewCount_L7'); c1_last15_fea.columns = header_c1_last15_fea
-    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '2')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
-                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L7'); c1_last15_fea.columns = header_c1_last15_fea                                       
-    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '3')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
-                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L7'); c1_last15_fea.columns = header_c1_last15_fea        
-    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '4')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
-                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L7'); c1_last15_fea.columns = header_c1_last15_fea                   
+    if len(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '2')])):
+        c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '2')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L7'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    else: c1_last15_fea['favorCount_L7'] = 0; header_c1_last15_fea.append('favorCount_L7')
+    if len(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '3')])):
+        c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '3')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L7'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    else: c1_last15_fea['cartCount_L7'] = 0; header_c1_last15_fea.append('cartCount_L7')
+    if len(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '4')])):
+        c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  7) & (c1_last15['behavior_type'] == '4')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L7'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    else: c1_last15_fea['payCount_L7'] = 0; header_c1_last15_fea.append('payCount_L7')
     c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '1')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
                                         left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('viewCount_L3'); c1_last15_fea.columns = header_c1_last15_fea
-    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '2')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
-                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L3'); c1_last15_fea.columns = header_c1_last15_fea                                       
-    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '3')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
-                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L3'); c1_last15_fea.columns = header_c1_last15_fea        
-    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '4')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
-                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L3'); c1_last15_fea.columns = header_c1_last15_fea                   
+    if len(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '2')])):
+        c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '2')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L3'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    else: c1_last15_fea['favorCount_L3'] = 0; header_c1_last15_fea.append('favorCount_L3')
+    if len(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '3')])):
+        c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '3')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L3'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    else: c1_last15_fea['cartCount_L3'] = 0; header_c1_last15_fea.append('cartCount_L3')
+    if len(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '4')])):
+        c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  3) & (c1_last15['behavior_type'] == '4')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L3'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    else: c1_last15_fea['payCount_L3'] = 0; header_c1_last15_fea.append('payCount_L3')
     c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '1')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
                                         left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('viewCount_L1'); c1_last15_fea.columns = header_c1_last15_fea
-    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '2')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
-                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L1'); c1_last15_fea.columns = header_c1_last15_fea                                       
-    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '3')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
-                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L1'); c1_last15_fea.columns = header_c1_last15_fea        
-    c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '4')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
-                                        left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L1'); c1_last15_fea.columns = header_c1_last15_fea                            
+    if len(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '2')])):
+        c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '2')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('favorCount_L1'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    else: c1_last15_fea['favorCount_L1'] = 0; header_c1_last15_fea.append('favorCount_L1')
+    if len(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '3')])):
+        c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '3')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('cartCount_L1'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    else: c1_last15_fea['cartCount_L1'] = 0; header_c1_last15_fea.append('cartCount_L1')
+    if len(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '4')])):
+        c1_last15_fea = c1_last15_fea.merge(DataFrame(c1_last15[(c1_last15['Day_interval']  <=  1) & (c1_last15['behavior_type'] == '4')].pivot_table(values = 'Day_interval',rows = 'user_category_pairs', aggfunc = len)),
+                                            left_on = 'user_category_pairs', right_index = True, how = 'left'); header_c1_last15_fea.append('payCount_L1'); c1_last15_fea.columns = header_c1_last15_fea                                       
+    else: c1_last15_fea['payCount_L1'] = 0; header_c1_last15_fea.append('payCount_L1')
                                         
     # generate train set
+    train_record_c1.to_csv("c:\\aaa.csv")
     train_record_c1 = train_record_c1.drop_duplicates(cols = 'user_category_pairs', take_last = True)
     train_record_c1 = train_record_c1.merge(c1_last15_fea, on = 'user_category_pairs', how = 'left')
     train_record_c1 = train_record_c1.fillna(0)
