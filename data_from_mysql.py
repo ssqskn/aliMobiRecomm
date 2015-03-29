@@ -93,7 +93,7 @@ def generateTrain():
 
 if __name__ == '__main__':
     
-    FROM_PICKLE = True
+    FROM_PICKLE = False
     
     if FROM_PICKLE == False:
         cur, connect = sqlConnect()

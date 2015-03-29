@@ -7,7 +7,8 @@ def fitRForest(train, target, N_rfs, params):
     weight = np.ones(len(target))
     
     rfs = [ensemble.RandomForestClassifier(n_estimators=ntree, max_features=maxfea,
-        min_samples_leaf=leafsize,random_state=i,compute_importances=1) for i in range(N_rfs)]
+        min_samples_leaf=leafsize,random_state=i) for i in range(N_rfs)]
     
     rfs_trained = [i.fit(train,target,weight) for i in rfs]
+    
     return rfs_trained
