@@ -13,9 +13,9 @@ from sklearn.preprocessing import Imputer
 if __name__ == '__main__':
     
     SUBMIT           = True
-    PosTRAINSETSIZE  = 10000   ##max 53000
-    NegTRAINSETSIZE  = 40000
-    PREDSETSIZE      = 100000
+    PosTRAINSETSIZE  = 53000   ##max 53000
+    NegTRAINSETSIZE  = 200000
+    PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
     
     params = [(20,5,20)]    #ntree, maxfea, leafsize of random forest
     Nrfs   = 3              #number of random rfs
@@ -125,7 +125,7 @@ if __name__ == '__main__':
     if SUBMIT == True:
         ## data import
         cur,connect = sqlConnect()
-        count = cur.execute("select * from test LIMIT 0," + str(PREDSETSIZE))
+        count = cur.execute("select * from testForSubmit LIMIT 0," + str(PREDSETSIZE))
         pred = pd.DataFrame(list(cur.fetchall())) 
         cur.close
         connect.close
