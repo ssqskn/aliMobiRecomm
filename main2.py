@@ -69,11 +69,11 @@ def trainFunc(kfold,Nrfs,params,SUBMIT):
         Nval   = len(target_val_kf)
         
         print "Start training............: ",round((time.time() - START_TIME),2)   
-        
         ##train
         rfs_trained = fitRForest(train_kf, target_kf, Nrfs, params)
+    
         print "Stop training.............: ",round((time.time() - START_TIME),2)   
-        
+        np.savetxt("submission\\feature_importances.txt",rfs_trained[0].feature_importances_)
         
         if rnd == 1: 
             rfs.append(rfs_trained)
