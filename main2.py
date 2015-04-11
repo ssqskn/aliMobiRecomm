@@ -10,7 +10,8 @@ from voting import majorityVoting
 from sklearn import cross_validation
 from sklearn.preprocessing import Imputer
 
-def trainFunc(kfold,Nrfs,params,SUBMIT):
+def trainFunc(kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETSIZE):
+    trainTime = time.time()
     ## data import
     cur,connect = sqlConnect()
     count = cur.execute("select * from Train where target = 4 LIMIT 0," + str(PosTRAINSETSIZE))
@@ -97,18 +98,24 @@ def trainFunc(kfold,Nrfs,params,SUBMIT):
 
     validationError = validationError * 1.0 / rnd
     print '[----Parameters: ', params, '----ErrorRate: ', validationError * 100, '%----]'
+    f = open("debug\\params.txt",'a')
+    n,m,l = params[0]
+    f.write("(1) TrainSetSize: pos-"+str(PosTRAINSETSIZE)+", neg-"+str(NegTRAINSETSIZE)+"  (2) ntrees: "+str(n)+", maxfeatures: "+
+            str(m)+", leafsize: "+str(l)+"  --------- CorrectionRate: "+str((100 - round(validationError*100,2)))+"% ,"+" Time:"+
+            str(round((time.time()-trainTime),2))+"\n")
+    f.close()
     
     return rfs
 
 
 if __name__ == '__main__':
     
-    SUBMIT           = True
-    PosTRAINSETSIZE  = 5300   ##max 53000
-    NegTRAINSETSIZE  = 20000
-    PREDSETSIZE      = 53300  ##total number:532897 in testForSubmit
+    SUBMIT           = False
+    PosTRAINSETSIZE  = 53000   ##max 53000
+    NegTRAINSETSIZE  = 200000
+    PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
     
-    params = [(20,5,20)]    #ntree, maxfea, leafsize of random forest
+    params = [(30,10,20)]    #ntree, maxfea, leafsize of random forest
     Nrfs   = 3              #number of random rfs
     kfold  = 3   
     
@@ -117,8 +124,17 @@ if __name__ == '__main__':
     else: OVERSAMPLINGRATE = 0
     
     START_TIME = time.time()
-      
-    rfs = trainFunc(kfold,Nrfs,params,SUBMIT)
+    
+    for params in [[(40,5,10)],[(40,10,10)],[(40,15,10)],[(40,20,10)],[(40,25,10)],[(40,35,10)],[(40,40,10)],
+                   [(20,5,10)],[(20,10,10)],[(20,15,10)],[(20,20,10)],[(20,25,10)],[(20,35,10)],[(20,40,10)],
+                   [(30,5,10)],[(30,10,10)],[(30,15,10)],[(30,20,10)],[(30,25,10)],[(30,35,10)],[(30,40,10)],
+                   [(40,5,20)],[(40,10,20)],[(40,15,20)],[(40,20,20)],[(40,25,20)],[(40,35,20)],[(40,40,20)],
+                   [(20,5,20)],[(20,10,20)],[(20,15,20)],[(20,20,20)],[(20,25,20)],[(20,35,20)],[(20,40,20)],
+                   [(30,5,20)],[(30,10,20)],[(30,15,20)],[(30,20,20)],[(30,25,20)],[(30,35,20)],[(30,40,20)],
+                   [(40,5,30)],[(40,10,30)],[(40,15,30)],[(40,20,30)],[(40,25,30)],[(40,35,30)],[(40,40,30)],
+                   [(20,5,30)],[(20,10,30)],[(20,15,30)],[(20,20,30)],[(20,25,30)],[(20,35,30)],[(20,40,30)],
+                   [(30,5,30)],[(30,10,30)],[(30,15,30)],[(30,20,30)],[(30,25,30)],[(30,35,30)],[(30,40,30)]]:
+        rfs = trainFunc(kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETSIZE)
     
     ## predicting
     if SUBMIT == True:
