@@ -76,17 +76,17 @@ def trainFunc(train,target,kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETS
 
 if __name__ == '__main__':
     
-    SUBMIT           = False
-    PosTRAINSETSIZE  = 53000   ##max 53000
-    NegTRAINSETSIZE  = 200000
+    SUBMIT           = True
+    PosTRAINSETSIZE  = 3252   ##max 3252
+    NegTRAINSETSIZE  = 210000
     PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
     
-    params = [(30,10,20)]    #ntree, maxfea, leafsize of random forest
+    params = [(40,40,20)]    #ntree, maxfea, leafsize of random forest
     Nrfs   = 3              #number of random rfs
     kfold  = 3   
     
-    if (NegTRAINSETSIZE/min([PosTRAINSETSIZE,53000])) > 4:
-        OVERSAMPLINGRATE = int(math.log((NegTRAINSETSIZE/min([PosTRAINSETSIZE,53000])),2) - 1)
+    if (NegTRAINSETSIZE/min([PosTRAINSETSIZE,3252])) >= 8:
+        OVERSAMPLINGRATE = int(math.log((NegTRAINSETSIZE * 1.0/8 / min([PosTRAINSETSIZE,3252])),2))
     else: OVERSAMPLINGRATE = 0
     
     START_TIME = time.time()
@@ -115,6 +115,11 @@ if __name__ == '__main__':
     train  = str2num_scale(train) 
     target = train[22]
     del train[22]
+    ## additional features
+    
+    
+    
+    
 
     train.to_csv("debug\\train.csv")
     target.to_csv("debug\\target.csv")
@@ -126,9 +131,9 @@ if __name__ == '__main__':
     target = np.array(target)
     
     
-    for n in [50,70]:
-        for m in [40,50]:
-            for l in [40,50]:
+    for n in [40]:
+        for m in [40]:
+            for l in [20]:
                 params = [(n,m,l)]
                 rfs = trainFunc(train,target,kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETSIZE)
     
@@ -149,7 +154,12 @@ if __name__ == '__main__':
         del pred[3]; del pred[4]
         
         pred  = pred.fillna(0);
-        pred  = str2num_scale(pred,TEST=True) 
+        pred  = str2num_scale(pred,TEST=True)
+        ## additional features - corresponding to train set
+        
+        
+        
+         
         pred  = Imputer().fit_transform(pred)
         
         test_pred_rfs = [rfs[i].predict(pred) for i in range(len(rfs))]
@@ -161,4 +171,4 @@ if __name__ == '__main__':
         userCateIdx.to_csv("submission\\prediction_rf.csv")
         np.savetxt("submission\\pred.csv",test_pred)
         ##save submit result
-        userCateIdx[userCateIdx['pred'] == 1].to_csv("submission\\submission_rf.csv")
+        userCateIdx[userCateIdx['pred'] == 1].to_csv("submission\\tianchi_mobile_recommendation_predict.csv")
