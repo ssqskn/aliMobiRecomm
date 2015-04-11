@@ -104,9 +104,9 @@ def trainFunc(kfold,Nrfs,params,SUBMIT):
 if __name__ == '__main__':
     
     SUBMIT           = True
-    PosTRAINSETSIZE  = 53000   ##max 53000
-    NegTRAINSETSIZE  = 200000
-    PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
+    PosTRAINSETSIZE  = 5300   ##max 53000
+    NegTRAINSETSIZE  = 20000
+    PREDSETSIZE      = 53300  ##total number:532897 in testForSubmit
     
     params = [(20,5,20)]    #ntree, maxfea, leafsize of random forest
     Nrfs   = 3              #number of random rfs
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         cur.close
         connect.close
         
-        userCateIdx = pd.DataFrame(pred[1], columns=['user_id'])
+        userCateIdx = pd.DataFrame(list(pred[1]), columns=['user_id'])
         userCateIdx['item_id'] = pred[2]
         del pred[0]; del pred[1]; del pred[2]
         del pred[3]; del pred[4]
