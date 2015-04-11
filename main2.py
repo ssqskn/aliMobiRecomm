@@ -10,42 +10,8 @@ from voting import majorityVoting
 from sklearn import cross_validation
 from sklearn.preprocessing import Imputer
 
-def trainFunc(kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETSIZE):
+def trainFunc(train,target,kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETSIZE):
     trainTime = time.time()
-    ## data import
-    cur,connect = sqlConnect()
-    count = cur.execute("select * from Train where target = 4 LIMIT 0," + str(PosTRAINSETSIZE))
-    train = pd.DataFrame(list(cur.fetchall()))      ###target:col = 22
-    
-    count = cur.execute("select * from Train where target is null LIMIT 0," + str(NegTRAINSETSIZE))
-    train = train.append(list(cur.fetchall()))
-    
-    cur.close
-    connect.close
-    print "Read train set............: ",round((time.time() - START_TIME),2)     
-    
-    train[22] = train[22].replace(4,1)           ## target - buy:1, not buy:0
-    del train[0]; del train[1]; del train[2]
-    del train[3]; del train[4]
-    ## over-sampling
-    for i in range(OVERSAMPLINGRATE):
-        train = train.append(train[train[22] == 1])
-    ## shuffling
-    train  = shuffling(train); 
-    train  = train.fillna(0);
-    ## convert to float and doing scaling
-    train  = str2num_scale(train) 
-    target = train[22]
-    del train[22]
-
-    train.to_csv("debug\\train.csv")
-    target.to_csv("debug\\target.csv")
-    
-    print "Train set process............: ",round((time.time() - START_TIME),2)   
-    
-    ## compute with NA depending on Imputer
-    train  = Imputer().fit_transform(train)
-    target = np.array(target)
     ##################
     #### training ####
     ##################
@@ -124,20 +90,52 @@ if __name__ == '__main__':
     else: OVERSAMPLINGRATE = 0
     
     START_TIME = time.time()
+    ## data import
+    cur,connect = sqlConnect()
+    count = cur.execute("select * from Train where target = 4 LIMIT 0," + str(PosTRAINSETSIZE))
+    train = pd.DataFrame(list(cur.fetchall()))      ###target:col = 22
     
-    for params in [[(40,5,10)],[(40,10,10)],[(40,15,10)],[(40,20,10)],[(40,25,10)],[(40,35,10)],[(40,40,10)],
-                   [(20,5,10)],[(20,10,10)],[(20,15,10)],[(20,20,10)],[(20,25,10)],[(20,35,10)],[(20,40,10)],
-                   [(30,5,10)],[(30,10,10)],[(30,15,10)],[(30,20,10)],[(30,25,10)],[(30,35,10)],[(30,40,10)],
-                   [(40,5,20)],[(40,10,20)],[(40,15,20)],[(40,20,20)],[(40,25,20)],[(40,35,20)],[(40,40,20)],
-                   [(20,5,20)],[(20,10,20)],[(20,15,20)],[(20,20,20)],[(20,25,20)],[(20,35,20)],[(20,40,20)],
-                   [(30,5,20)],[(30,10,20)],[(30,15,20)],[(30,20,20)],[(30,25,20)],[(30,35,20)],[(30,40,20)],
-                   [(40,5,30)],[(40,10,30)],[(40,15,30)],[(40,20,30)],[(40,25,30)],[(40,35,30)],[(40,40,30)],
-                   [(20,5,30)],[(20,10,30)],[(20,15,30)],[(20,20,30)],[(20,25,30)],[(20,35,30)],[(20,40,30)],
-                   [(30,5,30)],[(30,10,30)],[(30,15,30)],[(30,20,30)],[(30,25,30)],[(30,35,30)],[(30,40,30)]]:
-        rfs = trainFunc(kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETSIZE)
+    count = cur.execute("select * from Train where target is null LIMIT 0," + str(NegTRAINSETSIZE))
+    train = train.append(list(cur.fetchall()))
+    
+    cur.close
+    connect.close
+    print "Read train set............: ",round((time.time() - START_TIME),2)     
+    
+    train[22] = train[22].replace(4,1)           ## target - buy:1, not buy:0
+    del train[0]; del train[1]; del train[2]
+    del train[3]; del train[4]
+    ## over-sampling
+    for i in range(OVERSAMPLINGRATE):
+        train = train.append(train[train[22] == 1])
+    ## shuffling
+    train  = shuffling(train); 
+    train  = train.fillna(0);
+    ## convert to float and doing scaling
+    train  = str2num_scale(train) 
+    target = train[22]
+    del train[22]
+
+    train.to_csv("debug\\train.csv")
+    target.to_csv("debug\\target.csv")
+    
+    print "Train set process............: ",round((time.time() - START_TIME),2)   
+    
+    ## compute with NA depending on Imputer
+    train  = Imputer().fit_transform(train)
+    target = np.array(target)
+    
+    
+    for n in [50,70]:
+        for m in [40,50]:
+            for l in [40,50]:
+                params = [(n,m,l)]
+                rfs = trainFunc(train,target,kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETSIZE)
     
     ## predicting
     if SUBMIT == True:
+        del train
+        del target
         ## data import
         cur,connect = sqlConnect()
         count = cur.execute("select * from testForSubmit LIMIT 0," + str(PREDSETSIZE))
