@@ -12,10 +12,10 @@ from Prediction import createTestSet, createTestUserCategoryPairs
 
 if __name__ == '__main__':
     
-    USE_SAMPLE_DATA  = True
+    USE_SAMPLE_DATA  = False
     SUBMIT           = False
     OVERSAMPLINGRATE = 3
-    TRAINSETSIZE     = 70000
+    TRAINSETSIZE     = 200000
     
     params = [(20,5,20)]    #ntree, maxfea, leafs ize of random forest
     Nrfs   = 3              #number of random rfs
@@ -27,9 +27,9 @@ if __name__ == '__main__':
         train = pd.read_csv(PATH + "train0.csv")
     else:               
         train = pd.read_csv(PATH + "train0.csv")
-        train.append(pd.read_csv(PATH + "train1.csv"))
-#       train.append(pd.read_csv(PATH + "train2.csv"))
-#       train.append(pd.read_csv(PATH + "train3.csv"))
+        train = train.append(pd.read_csv(PATH + "train1.csv"))
+        train = train.append(pd.read_csv(PATH + "train2.csv"))
+#        train.append(pd.read_csv(PATH + "train3.csv"))
     del train['Unnamed: 0']; del train['user_id']; del train['item_id']
     del train['item_category']; del train['time']; del train['user_category_pairs']
     del train['Days']; del train['D&H']; del train['U&C_lastRecordTime']
@@ -44,6 +44,9 @@ if __name__ == '__main__':
     ## convert to float and doing scaling
     train  = str2num_scale(train) 
     target = train['if_pay']; del train['if_pay']
+    
+    features = pd.Series(train.columns)
+    features.to_csv("debug\\features.csv")
     
     train.to_csv("debug\\train.csv")
     target.to_csv("debug\\target.csv")
@@ -78,8 +81,9 @@ if __name__ == '__main__':
         
         ##train
         rfs_trained = fitRForest(train_kf, target_kf, Nrfs, params)
+        if rnd == 1: 
+            np.savetxt("debug\\features_importances.csv",rfs_trained[0].feature_importances_)
         print "Stop training.............: ",(time.time() - START_TIME)
-        
         
         if rnd == 1: 
             rfs.append(rfs_trained)
