@@ -10,63 +10,7 @@ from voting import majorityVoting
 from sklearn import cross_validation
 from sklearn.preprocessing import Imputer
 
-if __name__ == '__main__':
-    
-    SUBMIT           = True
-    PosTRAINSETSIZE  = 53000   ##max 53000
-    NegTRAINSETSIZE  = 200000
-    PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
-    
-    params = [(20,5,20)]    #ntree, maxfea, leafsize of random forest
-    Nrfs   = 3              #number of random rfs
-    kfold  = 3   
-    
-    if (NegTRAINSETSIZE/min([PosTRAINSETSIZE,53000])) > 4:
-        OVERSAMPLINGRATE = int(math.log((NegTRAINSETSIZE/min([PosTRAINSETSIZE,53000])),2) - 1)
-    else: OVERSAMPLINGRATE = 0
-    
-    START_TIME = time.time()
-    ## data import
-    cur,connect = sqlConnect()
-    count = cur.execute("select * from Train where target = 4 LIMIT 0," + str(PosTRAINSETSIZE))
-    train = pd.DataFrame(list(cur.fetchall()))      ###target:col = 22
-    
-    count = cur.execute("select * from Train where target is null LIMIT 0," + str(NegTRAINSETSIZE))
-    train = train.append(list(cur.fetchall()))
-    
-    cur.close
-    connect.close
-    print "Read train set............: ",round((time.time() - START_TIME),2)     
-    
-    
-    train[22] = train[22].replace(4,1)           ## target - buy:1, not buy:0
-    del train[0]; del train[1]; del train[2]
-    del train[3]; del train[4]
-    
-    ## over-sampling
-    for i in range(OVERSAMPLINGRATE):
-        train = train.append(train[train[22] == 1])
-    
-    ## shuffling
-    train  = shuffling(train); 
-    train  = train.fillna(0);
-
-    
-    ## convert to float and doing scaling
-    train  = str2num_scale(train) 
-    
-    target = train[22]
-    del train[22]
-
-    train.to_csv("debug\\train.csv")
-    target.to_csv("debug\\target.csv")
-    
-    print "Train set process............: ",round((time.time() - START_TIME),2)   
-    
-    ## compute with NA depending on Imputer
-    train  = Imputer().fit_transform(train)
-    target = np.array(target)
-    
+def trainFunc(train,target,kfold,Nrfs,params,SUBMIT):
     ##################
     #### training ####
     ##################
@@ -118,8 +62,64 @@ if __name__ == '__main__':
         if SUBMIT == True: break
 
     validationError = validationError * 1.0 / rnd
-    
     print '[----Parameters: ', params, '----ErrorRate: ', validationError * 100, '%----]'
+    
+    return rfs
+
+
+if __name__ == '__main__':
+    
+    SUBMIT           = True
+    PosTRAINSETSIZE  = 53000   ##max 53000
+    NegTRAINSETSIZE  = 200000
+    PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
+    
+    params = [(20,5,20)]    #ntree, maxfea, leafsize of random forest
+    Nrfs   = 3              #number of random rfs
+    kfold  = 3   
+    
+    if (NegTRAINSETSIZE/min([PosTRAINSETSIZE,53000])) > 4:
+        OVERSAMPLINGRATE = int(math.log((NegTRAINSETSIZE/min([PosTRAINSETSIZE,53000])),2) - 1)
+    else: OVERSAMPLINGRATE = 0
+    
+    START_TIME = time.time()
+    ## data import
+    cur,connect = sqlConnect()
+    count = cur.execute("select * from Train where target = 4 LIMIT 0," + str(PosTRAINSETSIZE))
+    train = pd.DataFrame(list(cur.fetchall()))      ###target:col = 22
+    
+    count = cur.execute("select * from Train where target is null LIMIT 0," + str(NegTRAINSETSIZE))
+    train = train.append(list(cur.fetchall()))
+    
+    cur.close
+    connect.close
+    print "Read train set............: ",round((time.time() - START_TIME),2)     
+    
+    train[22] = train[22].replace(4,1)           ## target - buy:1, not buy:0
+    del train[0]; del train[1]; del train[2]
+    del train[3]; del train[4]
+    ## over-sampling
+    for i in range(OVERSAMPLINGRATE):
+        train = train.append(train[train[22] == 1])
+    ## shuffling
+    train  = shuffling(train); 
+    train  = train.fillna(0);
+    ## convert to float and doing scaling
+    train  = str2num_scale(train) 
+    target = train[22]
+    del train[22]
+
+    train.to_csv("debug\\train.csv")
+    target.to_csv("debug\\target.csv")
+    
+    print "Train set process............: ",round((time.time() - START_TIME),2)   
+    
+    ## compute with NA depending on Imputer
+    train  = Imputer().fit_transform(train)
+    target = np.array(target)
+    
+    rfs = trainFunc(train,target,kfold,Nrfs,params,SUBMIT)
+    del train; del target
     
     ## predicting
     if SUBMIT == True:
