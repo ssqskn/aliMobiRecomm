@@ -10,7 +10,41 @@ from voting import majorityVoting
 from sklearn import cross_validation
 from sklearn.preprocessing import Imputer
 
-def trainFunc(train,target,kfold,Nrfs,params,SUBMIT):
+def trainFunc(kfold,Nrfs,params,SUBMIT):
+    ## data import
+    cur,connect = sqlConnect()
+    count = cur.execute("select * from Train where target = 4 LIMIT 0," + str(PosTRAINSETSIZE))
+    train = pd.DataFrame(list(cur.fetchall()))      ###target:col = 22
+    
+    count = cur.execute("select * from Train where target is null LIMIT 0," + str(NegTRAINSETSIZE))
+    train = train.append(list(cur.fetchall()))
+    
+    cur.close
+    connect.close
+    print "Read train set............: ",round((time.time() - START_TIME),2)     
+    
+    train[22] = train[22].replace(4,1)           ## target - buy:1, not buy:0
+    del train[0]; del train[1]; del train[2]
+    del train[3]; del train[4]
+    ## over-sampling
+    for i in range(OVERSAMPLINGRATE):
+        train = train.append(train[train[22] == 1])
+    ## shuffling
+    train  = shuffling(train); 
+    train  = train.fillna(0);
+    ## convert to float and doing scaling
+    train  = str2num_scale(train) 
+    target = train[22]
+    del train[22]
+
+    train.to_csv("debug\\train.csv")
+    target.to_csv("debug\\target.csv")
+    
+    print "Train set process............: ",round((time.time() - START_TIME),2)   
+    
+    ## compute with NA depending on Imputer
+    train  = Imputer().fit_transform(train)
+    target = np.array(target)
     ##################
     #### training ####
     ##################
@@ -83,43 +117,8 @@ if __name__ == '__main__':
     else: OVERSAMPLINGRATE = 0
     
     START_TIME = time.time()
-    ## data import
-    cur,connect = sqlConnect()
-    count = cur.execute("select * from Train where target = 4 LIMIT 0," + str(PosTRAINSETSIZE))
-    train = pd.DataFrame(list(cur.fetchall()))      ###target:col = 22
-    
-    count = cur.execute("select * from Train where target is null LIMIT 0," + str(NegTRAINSETSIZE))
-    train = train.append(list(cur.fetchall()))
-    
-    cur.close
-    connect.close
-    print "Read train set............: ",round((time.time() - START_TIME),2)     
-    
-    train[22] = train[22].replace(4,1)           ## target - buy:1, not buy:0
-    del train[0]; del train[1]; del train[2]
-    del train[3]; del train[4]
-    ## over-sampling
-    for i in range(OVERSAMPLINGRATE):
-        train = train.append(train[train[22] == 1])
-    ## shuffling
-    train  = shuffling(train); 
-    train  = train.fillna(0);
-    ## convert to float and doing scaling
-    train  = str2num_scale(train) 
-    target = train[22]
-    del train[22]
-
-    train.to_csv("debug\\train.csv")
-    target.to_csv("debug\\target.csv")
-    
-    print "Train set process............: ",round((time.time() - START_TIME),2)   
-    
-    ## compute with NA depending on Imputer
-    train  = Imputer().fit_transform(train)
-    target = np.array(target)
-    
-    rfs = trainFunc(train,target,kfold,Nrfs,params,SUBMIT)
-    del train; del target
+      
+    rfs = trainFunc(kfold,Nrfs,params,SUBMIT)
     
     ## predicting
     if SUBMIT == True:
