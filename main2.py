@@ -82,16 +82,17 @@ if __name__ == '__main__':
     
     SUBMIT           = True
     PosTRAINSETSIZE  = 6621   ##max 47:3252 + 46:3369 = 6621
-    NegTRAINSETSIZE  = 198000
+    NegTRAINSETSIZE  = 200000
     PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
     
-    params = [(40,40,20)]    #ntree, maxfea, leafsize of random forest
+    params = [(40,10,20)]    #ntree, maxfea, leafsize of random forest
     Nrfs   = 3              #number of random rfs
     kfold  = 3   
     
     if (NegTRAINSETSIZE *1.0 /min([PosTRAINSETSIZE,6621])) >= 30:
         OVERSAMPLINGRATE = int(math.log((NegTRAINSETSIZE * 1.0/30 / min([PosTRAINSETSIZE,6621])),2))
     else: OVERSAMPLINGRATE = 0
+    print "Over Sampling Rate:",OVERSAMPLINGRATE
     
     START_TIME = time.time()
     ## data import
@@ -123,9 +124,6 @@ if __name__ == '__main__':
     train['iBuyPP'] = train[70] *1.0/train[66]
     train['icBuyPP'] = train[70] *1.0/train[40]
     train['ucL1Prop'] = train[10] *1.0/train[5]
-    train['icViewProp'] = train[66] *1.0/train[36]
-    train['uiucViewProp'] = train[5] *1.0/train[49]
-    train['uiucBuyProp'] = train[9] *1.0/train[53] 
     train  = train.fillna(0)
     train  = train.replace('inf',0)    
     
@@ -175,9 +173,6 @@ if __name__ == '__main__':
         pred['iBuyPP'] = pred[69] *1.0/pred[65]
         pred['icBuyPP'] = pred[69] *1.0/pred[39]
         pred['ucL1Prop'] = pred[10] *1.0/pred[5]
-        pred['icViewProp'] = pred[65] *1.0/pred[35]
-        pred['uiucViewProp'] = pred[5] *1.0/pred[48]
-        pred['uiucBuyProp'] = pred[9] *1.0/pred[52]      
         pred  = pred.fillna(0)
         pred  = pred.replace('inf',0)
     
