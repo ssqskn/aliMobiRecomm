@@ -45,6 +45,8 @@ create table aliUser(
     );
 
 insert into aliUser(user_id) select distinct(user_id) from aliMobRec;
+alter table aliUser add index INDEX_u(user_id);
+
 update aliUser b set b.V1 = (select c.cnt from      ##V1 - 每个用户记录数,除去最后一天
 (select user_id,count(user_id) cnt from alimobrec where D_H < 48 group by user_id) c where b.user_id = c.user_id);
 update aliUser b set b.V2 = (select c.cnt from      ##V2 - 每个用户浏览数,除去最后一天
@@ -86,6 +88,8 @@ create table aliItem(
     );
 
 insert into aliItem(item_id) select distinct(item_id) from aliMobRec;
+alter table aliItem add index INDEX_i(item_id);
+
 update aliItem b set b.V1 = (select c.cnt from      ##V1 - 每个商品记录数,除去最后一天
 (select item_id,count(item_id) cnt from alimobrec where D_H < 48 group by item_id) c where b.item_id = c.item_id);
 update aliItem b set b.V2 = (select c.cnt from      ##V2 - 每个商品浏览数,除去最后一天
@@ -126,6 +130,7 @@ create table aliUserItem(
     );
 
 insert into aliUserItem(user_item_pairs) select distinct(user_item_pairs) from aliMobRec;
+alter table aliUserItem add index INDEX_ui(user_item_pairs);
 
 update aliUserItem b set b.V1 = (select c.cnt from      ##V1 - 每个用户-商品对记录数,除去最后一天
 (select user_item_pairs,count(user_item_pairs) cnt from alimobrec where D_H < 48 group by user_item_pairs) c where b.user_item_pairs = c.user_item_pairs);
@@ -164,6 +169,7 @@ update aliUserItem b set b.V17 = (select c.cnt from      ##V17 - 每个用户-�
 
 update aliUserItem b set b.V18 = (select c.mx from      ##V18 - 12月18日是否购买，购买-4 未购买-空
 (select user_item_pairs,max(behavior_type) mx from alimobrec where behavior_type = '4' and D_H >= 48 group by user_item_pairs) c where b.user_item_pairs = c.user_item_pairs);
+
 ###########################category-features####################################################
 create table alicategory(
     item_category varchar(25),
@@ -175,6 +181,8 @@ create table alicategory(
     );
 
 insert into alicategory(item_category) select distinct(item_category) from aliMobRec;
+alter table alicategory add index INDEX_c(item_category);
+
 update alicategory b set b.V1 = (select c.cnt from      ##V1 - 每个类别记录数,除去最后一天
 (select item_category,count(item_category) cnt from alimobrec where D_H < 48 group by item_category) c where b.item_category = c.item_category);
 update alicategory b set b.V2 = (select c.cnt from      ##V2 - 每个类别浏览数,除去最后一天
@@ -214,6 +222,8 @@ create table aliUsercategory(
     );
 
 insert into aliUsercategory(user_category_pairs) select distinct(user_category_pairs) from aliMobRec;
+alter table aliUsercategory add index INDEX_uc(user_category_pairs);
+
 update aliUsercategory b set b.V1 = (select c.cnt from      ##V1 - 每个用户-类别对记录数,除去最后一天
 (select user_category_pairs,count(user_category_pairs) cnt from alimobrec where D_H < 48 group by user_category_pairs) c where b.user_category_pairs = c.user_category_pairs);
 update aliUsercategory b set b.V2 = (select c.cnt from      ##V2 - 每个用户-类别对浏览数,除去最后一天
@@ -259,11 +269,6 @@ update aliUserItem b set b.item_category  = (select item_category from
 update aliUserItem b set b.user_category_pairs  = (select user_category_pairs from
 (select user_category_pairs,user_item_pairs from alimobrec group by user_item_pairs) c where b.user_item_pairs = c.user_item_pairs);
 
-alter table aliUser add index INDEX_u(user_id);
-alter table aliItem add index INDEX_i(item_id);
-alter table aliCategory add index INDEX_c(item_category);
-alter table aliUserCategory add index INDEX_uc(user_category_pairs);
-alter table aliUserItem add index INDEX_ui(user_item_pairs);
 alter table aliUserItem add index INDEX_uc (user_category_pairs);
 alter table aliUserItem add index INDEX_u (user_id);
 alter table aliUserItem add index INDEX_i (item_id);
@@ -315,6 +320,8 @@ create table aliUserTest(
     );
 
 insert into aliUserTest(user_id) select distinct(user_id) from alimobrec;
+alter table aliUserTest add index INDEX_u(user_id);
+
 update aliUserTest b set b.V1 = (select c.cnt from      ##V1 - 每个用户记录数,除去最后一天
 (select user_id,count(user_id) cnt from alimobrec where D_H > 19 group by user_id) c where b.user_id = c.user_id);
 update aliUserTest b set b.V2 = (select c.cnt from      ##V2 - 每个用户浏览数,除去最后一天
@@ -356,6 +363,8 @@ create table aliItemTest(
     );
 
 insert into aliItemTest(item_id) select distinct(item_id) from alimobrec;
+alter table aliItemTest add index INDEX_i(item_id);
+
 update aliItemTest b set b.V1 = (select c.cnt from      ##V1 - 每个商品记录数,除去最后一天
 (select item_id,count(item_id) cnt from alimobrec where D_H  >19 group by item_id) c where b.item_id = c.item_id);
 update aliItemTest b set b.V2 = (select c.cnt from      ##V2 - 每个商品浏览数,除去最后一天
@@ -396,6 +405,7 @@ create table aliUserItemTest(
     );
 
 insert into aliUserItemTest(user_item_pairs) select distinct(user_item_pairs) from alimobrec;
+alter table aliUserItemTest add index INDEX_ui(user_item_pairs);
 
 update aliUserItemTest b set b.V1 = (select c.cnt from      ##V1 - 每个用户-商品对记录数,除去最后一天
 (select user_item_pairs,count(user_item_pairs) cnt from alimobrec where D_H  >19 group by user_item_pairs) c where b.user_item_pairs = c.user_item_pairs);
@@ -443,6 +453,8 @@ create table alicategoryTest(
     );
 
 insert into alicategoryTest(item_category) select distinct(item_category) from alimobrec;
+alter table alicategoryTest add index INDEX_c(item_category);
+
 update alicategoryTest b set b.V1 = (select c.cnt from      ##V1 - 每个类别记录数,除去最后一天
 (select item_category,count(item_category) cnt from alimobrec where D_H  >19 group by item_category) c where b.item_category = c.item_category);
 update alicategoryTest b set b.V2 = (select c.cnt from      ##V2 - 每个类别浏览数,除去最后一天
@@ -482,6 +494,8 @@ create table aliusercategoryTest(
     );
 
 insert into aliusercategoryTest(user_category_pairs) select distinct(user_category_pairs) from alimobrec;
+alter table aliusercategoryTest add index INDEX_uc(user_category_pairs);
+
 update aliusercategoryTest b set b.V1 = (select c.cnt from      ##V1 - 每个用户-类别对记录数,除去最后一天
 (select user_category_pairs,count(user_category_pairs) cnt from alimobrec where D_H  >19 group by user_category_pairs) c where b.user_category_pairs = c.user_category_pairs);
 update aliusercategoryTest b set b.V2 = (select c.cnt from      ##V2 - 每个用户-类别对浏览数,除去最后一天
@@ -529,11 +543,6 @@ update aliUserItemTest b set b.user_category_pairs  = (select user_category_pair
 (select user_category_pairs,user_item_pairs from alimobrec group by user_item_pairs) c where b.user_item_pairs = c.user_item_pairs);
 
 
-alter table aliUserTest add index INDEX_u(user_id);
-alter table aliItemTest add index INDEX_i(item_id);
-alter table aliCategoryTest add index INDEX_c(item_category);
-alter table aliUserCategoryTest add index INDEX_uc(user_category_pairs);
-alter table aliUserItemTest add index INDEX_ui(user_item_pairs);
 alter table aliUserItemTest add index INDEX_uc (user_category_pairs);
 alter table aliUserItemTest add index INDEX_u (user_id);
 alter table aliUserItemTest add index INDEX_i (item_id);
@@ -605,11 +614,17 @@ select * from aliUserItem;
 select * from aliCategory;
 select * from alimobrec;
 select * from train;
+select * from train46;
 select * from test;
 select * from testForSubmit;
-select count(*) from train;
+
+select count(*) from train where target = 4;
+select count(*) from train46 where target = 4;
+
 select count(*) from test;
-select count(*) from testForSubmit;
+select count(*) from testForSubmit where V1b is not null and V1f > 1 ;
+select count(*) from train where V1b is null
+
 
 
 

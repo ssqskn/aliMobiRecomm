@@ -233,11 +233,6 @@ update aliUserItem46 b set b.item_category  = (select item_category from
 update aliUserItem46 b set b.user_category_pairs  = (select user_category_pairs from
 (select user_category_pairs,user_item_pairs from alimobrec group by user_item_pairs) c where b.user_item_pairs = c.user_item_pairs);
 
-alter table aliUser46 add index INDEX_u(user_id);
-alter table aliItem46 add index INDEX_i(item_id);
-alter table aliCategory46 add index INDEX_c(item_category);
-alter table aliUserCategory46 add index INDEX_uc(user_category_pairs);
-alter table aliUserItem46 add index INDEX_ui(user_item_pairs);
 alter table aliUserItem46 add index INDEX_uc (user_category_pairs);
 alter table aliUserItem46 add index INDEX_u (user_id);
 alter table aliUserItem46 add index INDEX_i (item_id);
@@ -275,3 +270,5 @@ where a.item_id = f.item_id);
 drop table traintmp1;
 drop table traintmp2;
 drop table traintmp3;
+
+alter table train46 add index INDEX_tgt(target);

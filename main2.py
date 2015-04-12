@@ -63,7 +63,11 @@ def trainFunc(train,target,kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETS
         if SUBMIT == True: break
 
     validationError = validationError * 1.0 / rnd
+    err = pd.DataFrame(list(target_pred),columns=['pred']);
+    err['target'] = list(target_val_kf);
+    err.to_csv("debug\\validation_list.csv")
     print '[----Parameters: ', params, '----ErrorRate: ', validationError * 100, '%----]'
+    
     f = open("debug\\params.txt",'a')
     n,m,l = params[0]
     f.write("(1) TrainSetSize: pos-"+str(PosTRAINSETSIZE)+", neg-"+str(NegTRAINSETSIZE)+"  (2) ntrees: "+str(n)+", maxfeatures: "+
@@ -77,25 +81,28 @@ def trainFunc(train,target,kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETS
 if __name__ == '__main__':
     
     SUBMIT           = True
-    PosTRAINSETSIZE  = 3252   ##max 3252
-    NegTRAINSETSIZE  = 210000
+    PosTRAINSETSIZE  = 6621   ##max 47:3252 + 46:3369 = 6621
+    NegTRAINSETSIZE  = 198000
     PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
     
     params = [(40,40,20)]    #ntree, maxfea, leafsize of random forest
     Nrfs   = 3              #number of random rfs
     kfold  = 3   
     
-    if (NegTRAINSETSIZE/min([PosTRAINSETSIZE,3252])) >= 8:
-        OVERSAMPLINGRATE = int(math.log((NegTRAINSETSIZE * 1.0/8 / min([PosTRAINSETSIZE,3252])),2))
+    if (NegTRAINSETSIZE *1.0 /min([PosTRAINSETSIZE,6621])) >= 30:
+        OVERSAMPLINGRATE = int(math.log((NegTRAINSETSIZE * 1.0/30 / min([PosTRAINSETSIZE,6621])),2))
     else: OVERSAMPLINGRATE = 0
     
     START_TIME = time.time()
     ## data import
     cur,connect = sqlConnect()
-    count = cur.execute("select * from Train where target = 4 LIMIT 0," + str(PosTRAINSETSIZE))
+    count = cur.execute("select * from Train where target = 4 LIMIT 0,3252")
     train = pd.DataFrame(list(cur.fetchall()))      ###target:col = 22
     
-    count = cur.execute("select * from Train where target is null LIMIT 0," + str(NegTRAINSETSIZE))
+    count = cur.execute("select * from Train46 where target = 4 LIMIT 0,3369")
+    train = train.append(list(cur.fetchall()))      ##same structure as train
+    
+    count = cur.execute("select * from Train where target is null and V1b is not null LIMIT 0," + str(NegTRAINSETSIZE))
     train = train.append(list(cur.fetchall()))
     
     cur.close
@@ -111,15 +118,24 @@ if __name__ == '__main__':
     ## shuffling
     train  = shuffling(train); 
     train  = train.fillna(0);
+    ## additional features
+    train['uBuyPP'] = train[9]*1.0/train[5]
+    train['iBuyPP'] = train[70] *1.0/train[66]
+    train['icBuyPP'] = train[70] *1.0/train[40]
+    train['ucL1Prop'] = train[10] *1.0/train[5]
+    train['icViewProp'] = train[66] *1.0/train[36]
+    train['uiucViewProp'] = train[5] *1.0/train[49]
+    train['uiucBuyProp'] = train[9] *1.0/train[53] 
+    train  = train.fillna(0)
+    train  = train.replace('inf',0)    
+    
+    
+    
+
     ## convert to float and doing scaling
     train  = str2num_scale(train) 
     target = train[22]
     del train[22]
-    ## additional features
-    
-    
-    
-    
 
     train.to_csv("debug\\train.csv")
     target.to_csv("debug\\target.csv")
@@ -143,7 +159,7 @@ if __name__ == '__main__':
         del target
         ## data import
         cur,connect = sqlConnect()
-        count = cur.execute("select * from testForSubmit LIMIT 0," + str(PREDSETSIZE))
+        count = cur.execute("select * from testForSubmit where V1b is not null and V1f > 1 LIMIT 0," + str(PREDSETSIZE))
         pred = pd.DataFrame(list(cur.fetchall())) 
         cur.close
         connect.close
@@ -154,12 +170,22 @@ if __name__ == '__main__':
         del pred[3]; del pred[4]
         
         pred  = pred.fillna(0);
+        ## additional features - corresponding to train set        
+        pred['uBuyPP'] = pred[9]*1.0/pred[5]
+        pred['iBuyPP'] = pred[69] *1.0/pred[65]
+        pred['icBuyPP'] = pred[69] *1.0/pred[39]
+        pred['ucL1Prop'] = pred[10] *1.0/pred[5]
+        pred['icViewProp'] = pred[65] *1.0/pred[35]
+        pred['uiucViewProp'] = pred[5] *1.0/pred[48]
+        pred['uiucBuyProp'] = pred[9] *1.0/pred[52]      
+        pred  = pred.fillna(0)
+        pred  = pred.replace('inf',0)
+    
+    
+    
+    
+  
         pred  = str2num_scale(pred,TEST=True)
-        ## additional features - corresponding to train set
-        
-        
-        
-         
         pred  = Imputer().fit_transform(pred)
         
         test_pred_rfs = [rfs[i].predict(pred) for i in range(len(rfs))]
@@ -172,3 +198,5 @@ if __name__ == '__main__':
         np.savetxt("submission\\pred.csv",test_pred)
         ##save submit result
         userCateIdx[userCateIdx['pred'] == 1].to_csv("submission\\tianchi_mobile_recommendation_predict.csv")
+        
+        print "DONE!!  -   ",round((time.time() - START_TIME),2) 
