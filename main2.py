@@ -82,7 +82,7 @@ if __name__ == '__main__':
     
     SUBMIT           = True
     PosTRAINSETSIZE  = 6621   ##max 47:3252 + 46:3369 = 6621
-    NegTRAINSETSIZE  = 200000
+    NegTRAINSETSIZE  = 250000
     PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
     
     params = [(40,10,20)]    #ntree, maxfea, leafsize of random forest
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     if (NegTRAINSETSIZE *1.0 /min([PosTRAINSETSIZE,6621])) >= 30:
         OVERSAMPLINGRATE = int(math.log((NegTRAINSETSIZE * 1.0/30 / min([PosTRAINSETSIZE,6621])),2))
     else: OVERSAMPLINGRATE = 0
-    print "Over Sampling Rate:",OVERSAMPLINGRATE
+    print "OverSampling Rate:",OVERSAMPLINGRATE
     
     START_TIME = time.time()
     ## data import
