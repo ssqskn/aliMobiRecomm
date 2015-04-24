@@ -1,3 +1,10 @@
+prevent from auto-execution
+drop table aliuser46;
+drop table alicategory46;
+drop table aliitem46;
+drop table aliusercategory46;
+drop table aliuseritem46;
+drop table train46;
 ###########################user-features####################################################
 create table aliUser46(
     user_id varchar(25),

@@ -81,11 +81,11 @@ def trainFunc(train,target,kfold,Nrfs,params,SUBMIT,PosTRAINSETSIZE,NegTRAINSETS
 if __name__ == '__main__':
     
     SUBMIT           = True
-    PosTRAINSETSIZE  = 6621   ##max 47:3252 + 46:3369 = 6621
-    NegTRAINSETSIZE  = 250000
+    PosTRAINSETSIZE  = 6281   ##max 47:3151 + 46:3130 = 6281
+    NegTRAINSETSIZE  = 270000
     PREDSETSIZE      = 533000  ##total number:532897 in testForSubmit
     
-    params = [(40,10,20)]    #ntree, maxfea, leafsize of random forest
+    params = [(40,40,20)]    #ntree, maxfea, leafsize of random forest
     Nrfs   = 3              #number of random rfs
     kfold  = 3   
     
@@ -97,10 +97,10 @@ if __name__ == '__main__':
     START_TIME = time.time()
     ## data import
     cur,connect = sqlConnect()
-    count = cur.execute("select * from Train where target = 4 LIMIT 0,3252")
+    count = cur.execute("select * from Train where target = 4 LIMIT 0,3151")
     train = pd.DataFrame(list(cur.fetchall()))      ###target:col = 22
     
-    count = cur.execute("select * from Train46 where target = 4 LIMIT 0,3369")
+    count = cur.execute("select * from Train46 where target = 4 LIMIT 0,3130")
     train = train.append(list(cur.fetchall()))      ##same structure as train
     
     count = cur.execute("select * from Train where target is null and V1b is not null LIMIT 0," + str(NegTRAINSETSIZE))

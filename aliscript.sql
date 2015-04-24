@@ -1,4 +1,21 @@
-#drop table aliMobRec;
+prevent from auto-execution
+drop table aliMobRec;
+drop table alicategoryTest;
+drop table aliitem;
+drop table aliitempred;
+drop table aliitemtest;
+drop table alicategory;
+drop table alimobrecitemforpred;
+drop table aliuser;
+drop table aliusercategory;
+drop table aliusercategorytest;
+drop table aliuseritem;
+drop table aliuseritemtest;
+drop table aliusertest;
+drop table test;
+drop table testforsubmit;
+drop table train;
+
 create table aliMobRec(
     user_id varchar(25),
     item_id  varchar(25),
